@@ -1,37 +1,40 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const assignments = await prisma.vehicleAssignment.findMany({
-      orderBy: { createdAt: 'desc' },
+    const assignments = await prisma.assignment.findMany({
+      orderBy: { assignedDate: 'desc' },
     });
     return NextResponse.json(assignments);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error('Error fetching assignments:', error);
+    return NextResponse.json({ error: 'Failed to fetch assignments' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { vehicle, driver, date, time } = body;
+    const { driverName, vehicleNumber, assignedDate } = body;
 
-    if (!vehicle || !driver || !date || !time) {
-      return NextResponse.json({ error: 'All assignment fields are required.' }, { status: 400 });
+    if (!driverName || !vehicleNumber || !assignedDate) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const newAssignment = await prisma.vehicleAssignment.create({
+    const newAssignment = await prisma.assignment.create({
       data: {
-        vehicle,
-        driver,
-        date,
-        time,
+        driverName,
+        vehicleNumber,
+        assignedDate: new Date(assignedDate),
       },
     });
 
-    return NextResponse.json({ success: true, assignment: newAssignment });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(newAssignment, { status: 201 });
+  } catch (error) {
+    console.error('Error creating assignment:', error);
+    return NextResponse.json({ error: 'Failed to create assignment' }, { status: 500 });
   }
 }
