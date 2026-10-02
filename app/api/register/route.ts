@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { name, phone, password } = await request.json();
+    const body = await request.json();
+    const { name, phone, password } = body;
 
     if (!name || !phone || !password) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
@@ -26,7 +25,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, role: newUser.role });
-  } catch (error) {
-    return NextResponse.json({ error: 'Database error during registration.' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Registration Error:', error);
+    return NextResponse.json({ error: error.message || 'Database error during registration.' }, { status: 500 });
   }
 }
