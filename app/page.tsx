@@ -8,6 +8,26 @@ export default function Home() {
   const [role, setRole] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Modal states for Admin actions
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showFareModal, setShowFareModal] = useState(false);
+
+  // New Booking Form States
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState('Toyota Camry');
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState('');
+
+  // Fare Calculator Form States
+  const [distanceKm, setDistanceKm] = useState('');
+  const [fuelPricePerLitre, setFuelPricePerLitre] = useState('3.15'); // UAE Special 95 reference rate
+  const [carEfficiency, setCarEfficiency] = useState('10'); // km per litre average
+  const [markupPercent, setMarkupPercent] = useState('30'); // profit markup
+  const [fareResult, setFareResult] = useState<any>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -34,6 +54,37 @@ export default function Home() {
     router.push('/login');
   };
 
+  const handleCreateBooking = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingSuccess(`Booking successfully created for ${clientName} (${selectedVehicle})!`);
+    setTimeout(() => {
+      setShowBookingModal(false);
+      setBookingSuccess('');
+      setClientName('');
+      setClientPhone('');
+      setPickupLocation('');
+      setDropoffLocation('');
+    }, 2000);
+  };
+
+  const handleCalculateFare = (e: React.FormEvent) => {
+    e.preventDefault();
+    const dist = parseFloat(distanceKm) || 0;
+    const price = parseFloat(fuelPricePerLitre) || 0;
+    const efficiency = parseFloat(carEfficiency) || 10;
+    const markup = parseFloat(markupPercent) || 30;
+
+    const litresNeeded = dist / efficiency;
+    const fuelCost = litresNeeded * price;
+    const calculatedFare = fuelCost * (1 + markup / 100);
+
+    setFareResult({
+      litres: litresNeeded.toFixed(2),
+      fuelCost: fuelCost.toFixed(2),
+      totalFare: calculatedFare.toFixed(2),
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
@@ -42,7 +93,7 @@ export default function Home() {
     );
   }
 
-  // PUBLIC LANDING PAGE (Secure - No company data shown)
+  // PUBLIC LANDING PAGE
   if (!role) {
     return (
       <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6">
@@ -102,7 +153,7 @@ export default function Home() {
 
   // ADMIN VIEW (Full Fleet Management)
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
+    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-10 relative">
       <div className="max-w-6xl mx-auto">
         <header className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
           <div>
@@ -148,15 +199,185 @@ export default function Home() {
             Manage your daily client calls, calculate route distances, and review trip fares instantly.
           </p>
           <div className="flex gap-4">
-            <button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-5 py-2.5 rounded-lg transition text-sm">
+            <button 
+              onClick={() => setShowBookingModal(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-5 py-2.5 rounded-lg transition text-sm shadow-md"
+            >
               + New Booking
             </button>
-            <button className="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2.5 rounded-lg transition border border-slate-700 text-sm">
+            <button 
+              onClick={() => setShowFareModal(true)}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2.5 rounded-lg transition border border-slate-700 text-sm"
+            >
               Calculate Trip Fare
             </button>
           </div>
         </div>
       </div>
+
+      {/* NEW BOOKING MODAL */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-amber-400">Create New Booking</h3>
+              <button onClick={() => setShowBookingModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            {bookingSuccess ? (
+              <div className="bg-emerald-950/60 border border-emerald-800 text-emerald-300 p-4 rounded-xl text-sm text-center">
+                {bookingSuccess}
+              </div>
+            ) : (
+              <form onSubmit={handleCreateBooking} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Name</label>
+                  <input 
+                    type="text" 
+                    value={clientName} 
+                    onChange={e => setClientName(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                    placeholder="e.g. John Smith"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Phone</label>
+                  <input 
+                    type="text" 
+                    value={clientPhone} 
+                    onChange={e => setClientPhone(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                    placeholder="+971501234567"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Assign Vehicle</label>
+                  <select 
+                    value={selectedVehicle} 
+                    onChange={e => setSelectedVehicle(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="Toyota Corolla">Toyota Corolla</option>
+                    <option value="Toyota Camry">Toyota Camry</option>
+                    <option value="Kia Carnival">Kia Carnival</option>
+                    <option value="Nissan Patrol">Nissan Patrol</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Pickup Location</label>
+                  <input 
+                    type="text" 
+                    value={pickupLocation} 
+                    onChange={e => setPickupLocation(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                    placeholder="e.g. Dubai Airport Terminal 3"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dropoff Location</label>
+                  <input 
+                    type="text" 
+                    value={dropoffLocation} 
+                    onChange={e => setDropoffLocation(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                    placeholder="e.g. Dibba, Fujairah"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowBookingModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
+                  <button type="submit" className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition">Save Booking</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CALCULATE TRIP FARE MODAL */}
+      {showFareModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-amber-400">Trip Fare & Fuel Calculator</h3>
+              <button onClick={() => setShowFareModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleCalculateFare} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Distance (KM)</label>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  value={distanceKm} 
+                  onChange={e => setDistanceKm(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  placeholder="e.g. 130"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Fuel Rate (AED/L)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={fuelPricePerLitre} 
+                    onChange={e => setFuelPricePerLitre(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Efficiency (KM/L)</label>
+                  <input 
+                    type="number" 
+                    step="0.1" 
+                    value={carEfficiency} 
+                    onChange={e => setCarEfficiency(e.target.value)} 
+                    required 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Profit Markup (%)</label>
+                <input 
+                  type="number" 
+                  value={markupPercent} 
+                  onChange={e => setMarkupPercent(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                />
+              </div>
+
+              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition mt-2">
+                Calculate Estimate
+              </button>
+            </form>
+
+            {fareResult && (
+              <div className="mt-6 bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 text-sm">
+                <div className="flex justify-between text-slate-400">
+                  <span>Fuel Required:</span>
+                  <span className="text-white font-medium">{fareResult.litres} Litres</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Estimated Fuel Cost:</span>
+                  <span className="text-white font-medium">AED {fareResult.fuelCost}</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-800 pt-2 text-amber-400 font-bold">
+                  <span>Recommended Trip Fare:</span>
+                  <span>AED {fareResult.totalFare}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
