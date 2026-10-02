@@ -26,100 +26,113 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-black text-white p-5 sm:p-8 rounded-2xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-sky-700">
-        <div>
-          <span className="bg-sky-600 text-white text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-            Command Center
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 border border-sky-500/20 text-white p-6 sm:p-8 rounded-3xl shadow-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10">
+          <span className="bg-sky-500/20 border border-sky-500/30 text-sky-300 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+            Command Center Active
           </span>
-          <h2 className="text-xl sm:text-2xl font-black mt-2">Fleet Operations</h2>
-          <p className="text-sky-200 text-xs sm:text-sm mt-1">
-            Overview of bookings, fines, and driver shifts.
+          <h2 className="text-2xl sm:text-3xl font-black mt-3 tracking-tight">Fleet Operations Hub</h2>
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-md leading-relaxed">
+            Real-time telemetry, bookings, compliance tracking, and automated fare estimators.
           </p>
         </div>
-        <Link href="/admin/bookings" className="w-full sm:w-auto text-center bg-sky-500 hover:bg-sky-400 text-black font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md">
+        <Link href="/admin/bookings" className="relative z-10 w-full sm:w-auto text-center bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-200 shadow-lg shadow-sky-500/20 hover:scale-105">
           + New Booking
         </Link>
       </div>
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-sky-700 shadow-md">
-          <h3 className="text-black text-[10px] sm:text-xs font-bold uppercase tracking-wider">Bookings</h3>
-          <p className="text-2xl sm:text-3xl font-black mt-2 text-black">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-slate-900/90 backdrop-blur border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl hover:border-sky-500/30 transition">
+          <h3 className="text-slate-400 text-[10px] sm:text-xs font-black uppercase tracking-wider">Total Bookings</h3>
+          <p className="text-3xl sm:text-4xl font-black mt-3 text-white">
             {loading ? '...' : bookingsCount}
           </p>
-          <span className="text-[10px] sm:text-xs text-sky-700 font-bold mt-1 block">Active</span>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-sky-400" />
+            <span className="text-[10px] sm:text-xs text-sky-400 font-bold">Synced with DB</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-sky-700 shadow-md">
-          <h3 className="text-black text-[10px] sm:text-xs font-bold uppercase tracking-wider">Fines Total</h3>
-          <p className="text-2xl sm:text-3xl font-black mt-2 text-red-600">
+        <div className="bg-slate-900/90 backdrop-blur border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl hover:border-red-500/30 transition">
+          <h3 className="text-slate-400 text-[10px] sm:text-xs font-black uppercase tracking-wider">Traffic Fines Total</h3>
+          <p className="text-3xl sm:text-4xl font-black mt-3 text-red-500">
             {loading ? '...' : `AED ${finesTotal.toFixed(0)}`}
           </p>
-          <span className="text-[10px] sm:text-xs text-red-600 font-bold mt-1 block">Violations Alert</span>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[10px] sm:text-xs text-red-400 font-bold">Violation Alerts</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-sky-700 shadow-md">
-          <h3 className="text-black text-[10px] sm:text-xs font-bold uppercase tracking-wider">Shifts</h3>
-          <p className="text-2xl sm:text-3xl font-black mt-2 text-sky-800">
+        <div className="bg-slate-900/90 backdrop-blur border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl hover:border-sky-500/30 transition">
+          <h3 className="text-slate-400 text-[10px] sm:text-xs font-black uppercase tracking-wider">Shift Assignments</h3>
+          <p className="text-3xl sm:text-4xl font-black mt-3 text-sky-400">
             {loading ? '...' : assignmentsCount}
           </p>
-          <span className="text-[10px] sm:text-xs text-sky-700 font-bold mt-1 block">Assigned</span>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-sky-400" />
+            <span className="text-[10px] sm:text-xs text-slate-400 font-bold">Active Drivers</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-sky-700 shadow-md">
-          <h3 className="text-black text-[10px] sm:text-xs font-bold uppercase tracking-wider">Database</h3>
-          <p className="text-2xl sm:text-3xl font-black mt-2 text-emerald-600">Online</p>
-          <span className="text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 block">Neon DB</span>
+        <div className="bg-slate-900/90 backdrop-blur border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl hover:border-emerald-500/30 transition">
+          <h3 className="text-slate-400 text-[10px] sm:text-xs font-black uppercase tracking-wider">Neon Database</h3>
+          <p className="text-3xl sm:text-4xl font-black mt-3 text-emerald-400">Online</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-[10px] sm:text-xs text-emerald-400 font-bold">PostgreSQL Ready</span>
+          </div>
         </div>
       </div>
 
       {/* Quick Navigation Hub */}
       <div>
-        <h3 className="text-base sm:text-lg font-extrabold text-white mb-3">Modules</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href="/admin/bookings" className="group bg-white hover:bg-sky-50 p-5 rounded-2xl border border-sky-700 transition shadow-md flex justify-between items-center">
+        <h3 className="text-lg font-black text-white mb-4 tracking-wide">Management Modules</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <Link href="/admin/bookings" className="group bg-slate-900 hover:bg-slate-850 p-6 rounded-3xl border border-slate-800 hover:border-sky-500/50 transition-all duration-200 shadow-xl flex justify-between items-center">
             <div>
-              <span className="text-[10px] text-sky-700 font-extrabold uppercase tracking-wider">Dispatch</span>
-              <h4 className="text-lg font-black text-black mt-0.5 group-hover:text-sky-800 transition">Client Bookings</h4>
-              <p className="text-black text-xs mt-0.5 font-medium">Manage scheduled rides.</p>
+              <span className="text-[10px] text-sky-400 font-black uppercase tracking-wider bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20">Dispatch</span>
+              <h4 className="text-xl font-black text-white mt-3 group-hover:text-sky-400 transition">Client Bookings</h4>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1">Manage scheduled client rides and dispatch.</p>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-black group-hover:bg-sky-600 transition text-sm">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 transition-all duration-200 shadow-md">
               ➔
             </div>
           </Link>
 
-          <Link href="/admin/fines" className="group bg-white hover:bg-red-50 p-5 rounded-2xl border border-sky-700 transition shadow-md flex justify-between items-center">
+          <Link href="/admin/fines" className="group bg-slate-900 hover:bg-slate-850 p-6 rounded-3xl border border-slate-800 hover:border-red-500/50 transition-all duration-200 shadow-xl flex justify-between items-center">
             <div>
-              <span className="text-[10px] text-red-600 font-extrabold uppercase tracking-wider">Compliance</span>
-              <h4 className="text-lg font-black text-black mt-0.5 group-hover:text-red-700 transition">Traffic Fines</h4>
-              <p className="text-black text-xs mt-0.5 font-medium">Track vehicle penalties.</p>
+              <span className="text-[10px] text-red-400 font-black uppercase tracking-wider bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20">Compliance</span>
+              <h4 className="text-xl font-black text-white mt-3 group-hover:text-red-400 transition">Traffic Fines</h4>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1">Track vehicle penalties and violation expenses.</p>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center font-black group-hover:bg-black transition text-sm">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-red-400 group-hover:bg-red-600 group-hover:text-white transition-all duration-200 shadow-md">
               ➔
             </div>
           </Link>
 
-          <Link href="/admin/assignments" className="group bg-white hover:bg-sky-50 p-5 rounded-2xl border border-sky-700 transition shadow-md flex justify-between items-center">
+          <Link href="/admin/assignments" className="group bg-slate-900 hover:bg-slate-850 p-6 rounded-3xl border border-slate-800 hover:border-sky-500/50 transition-all duration-200 shadow-xl flex justify-between items-center">
             <div>
-              <span className="text-[10px] text-sky-700 font-extrabold uppercase tracking-wider">Operations</span>
-              <h4 className="text-lg font-black text-black mt-0.5 group-hover:text-sky-800 transition">Shift Lookup</h4>
-              <p className="text-black text-xs mt-0.5 font-medium">Find car drivers by date.</p>
+              <span className="text-[10px] text-sky-400 font-black uppercase tracking-wider bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20">Operations</span>
+              <h4 className="text-xl font-black text-white mt-3 group-hover:text-sky-400 transition">Vehicle Shift Lookup</h4>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1">Find out which driver was driving any car on any date.</p>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-black group-hover:bg-sky-600 transition text-sm">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 transition-all duration-200 shadow-md">
               ➔
             </div>
           </Link>
 
-          <Link href="/admin/calculator" className="group bg-white hover:bg-sky-50 p-5 rounded-2xl border border-sky-700 transition shadow-md flex justify-between items-center">
+          <Link href="/admin/calculator" className="group bg-slate-900 hover:bg-slate-850 p-6 rounded-3xl border border-slate-800 hover:border-sky-500/50 transition-all duration-200 shadow-xl flex justify-between items-center">
             <div>
-              <span className="text-[10px] text-sky-700 font-extrabold uppercase tracking-wider">Finance</span>
-              <h4 className="text-lg font-black text-black mt-0.5 group-hover:text-sky-800 transition">Trip Calculator</h4>
-              <p className="text-black text-xs mt-0.5 font-medium">Estimate fuel and fares.</p>
+              <span className="text-[10px] text-sky-400 font-black uppercase tracking-wider bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20">Finance</span>
+              <h4 className="text-xl font-black text-white mt-3 group-hover:text-sky-400 transition">Trip Fare Calculator</h4>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1">Estimate fuel and fares using Special 95 rates.</p>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-black group-hover:bg-sky-600 transition text-sm">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 transition-all duration-200 shadow-md">
               ➔
             </div>
           </Link>
