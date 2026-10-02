@@ -20,14 +20,17 @@ export default function AssignmentsPage() {
   const [assignedDate, setAssignedDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchAssignments = useCallback(() => {
+  const fetchAssignments = useCallback(async () => {
     try {
-      const local = localStorage.getItem('lumina_assignments');
-      if (local) {
-        setAssignments(JSON.parse(local));
+      const res = await fetch('/api/assignments');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setAssignments(data);
+      } else {
+        setError('Failed to load shift assignments.');
       }
     } catch {
-      setError('Failed to load local assignment records.');
+      setError('Error connecting to database.');
     } finally {
       setLoading(false);
     }
@@ -37,26 +40,32 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, [fetchAssignments]);
 
-  const handleCreateAssignment = (e: React.FormEvent) => {
+  const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
 
-    const newEntry: Assignment = {
-      id: Date.now().toString(),
-      driverName,
-      vehicleNumber,
-      assignedDate: new Date(assignedDate).toISOString(),
-    };
-
     try {
-      const updated = [newEntry, ...assignments];
-      setAssignments(updated);
-      localStorage.setItem('lumina_assignments', JSON.stringify(updated));
-      setDriverName('');
-      setAssignedDate('');
+      const res = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          driverName,
+          vehicleNumber,
+          assignedDate: new Date(assignedDate).toISOString()
+        })
+      });
+
+      if (res.ok) {
+        setDriverName('');
+        setAssignedDate('');
+        fetchAssignments();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to create assignment.');
+      }
     } catch {
-      setError('Failed to save assignment record.');
+      setError('Network error while saving assignment.');
     } finally {
       setSubmitting(false);
     }
@@ -64,7 +73,7 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Header Banner */}
+      {/* Lumina 1 Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-sky-500 to-blue-600 text-white p-6 sm:p-8 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.25)] border border-cyan-300/40">
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-[70px] pointer-events-none" />
         <div className="relative z-10">
@@ -73,7 +82,7 @@ export default function AssignmentsPage() {
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Vehicle Shift Assignments</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-sm font-light leading-relaxed opacity-90">
-            Assign drivers to fleet vehicles by date for accountability under Lumina 1.
+            Assign drivers to fleet vehicles by date for accountability and compliance under Lumina 1.
           </p>
         </div>
       </div>
@@ -84,7 +93,7 @@ export default function AssignmentsPage() {
         </div>
       )}
 
-      {/* New Assignment Form */}
+      {/* New Assignment Form (Lumina 1 Glass) */}
       <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-6 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)]">
         <h3 className="text-xs font-medium text-slate-500 mb-4 tracking-[0.15em] uppercase">New Shift Assignment</h3>
         <form onSubmit={handleCreateAssignment} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
