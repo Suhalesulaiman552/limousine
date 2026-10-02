@@ -1,6 +1,21 @@
-"scripts": {
-  "dev": "next dev",
-  "build": "prisma generate && next build",
-  "start": "next start",
-  "lint": "next lint"
+{
+  "name": "al-suhail-limousine",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.x.x",
+    "react": "^18 or 19",
+    "react-dom": "^18 or 19",
+    "next": "14 or 15"
+  },
+  "devDependencies": {
+    "prisma": "^5.x.x",
+    "typescript": "^5"
+  }
 }
