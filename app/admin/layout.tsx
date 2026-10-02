@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+      <div className="min-h-screen bg-white flex items-center justify-center text-slate-600 font-medium">
         Verifying Administrator Access...
       </div>
     );
@@ -47,26 +47,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 md:p-10">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10 font-sans">
       <div className="max-w-6xl mx-auto">
         {/* Top Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-800 gap-3">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-200 gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-amber-400">Al-Suhail Limousine</h1>
-            <p className="text-slate-400 text-xs sm:text-sm">Admin Portal</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Al-Suhail Limousine</h1>
+            <p className="text-sky-600 font-medium text-xs sm:text-sm">Admin Control Center</p>
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
-              <span className="text-amber-400 font-semibold">ADMIN</span>
+            <div className="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg border border-sky-200 text-xs font-semibold">
+              ADMINISTRATOR
             </div>
-            <button onClick={handleLogout} className="bg-red-950 hover:bg-red-900 text-red-300 border border-red-800 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+            <button onClick={handleLogout} className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
               Sign Out
             </button>
           </div>
         </header>
 
         {/* Navigation Tabs (Scrollable on Mobile) */}
-        <nav className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none bg-slate-900 p-2 rounded-2xl border border-slate-800">
+        <nav className="flex gap-2 mb-6 overflow-x-auto pb-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -75,8 +75,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={link.href}
                 className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition ${
                   isActive
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/10'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
                 {link.name}
