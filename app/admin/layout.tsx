@@ -38,11 +38,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Assignments completely removed for clean testing
+  // Assignments explicitly included here
   const navLinks = [
     { name: 'Dashboard', href: '/admin/dashboard' },
     { name: 'Bookings', href: '/admin/bookings' },
     { name: 'Traffic Fines', href: '/admin/fines' },
+    { name: 'Assignments', href: '/admin/assignments' },
     { name: 'Calculator', href: '/admin/calculator' },
   ];
 
