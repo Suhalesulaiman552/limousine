@@ -33,16 +33,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sky-100 via-white to-sky-50 flex items-center justify-center text-cyan-600 font-light tracking-[0.2em] text-xs">
-        LOADING MINIMAL APP...
+        LOADING SECURE PORTAL...
       </div>
     );
   }
 
+  // Assignments completely removed for clean testing
   const navLinks = [
     { name: 'Dashboard', href: '/admin/dashboard' },
     { name: 'Bookings', href: '/admin/bookings' },
     { name: 'Traffic Fines', href: '/admin/fines' },
-    { name: 'Assignments', href: '/admin/assignments' },
     { name: 'Calculator', href: '/admin/calculator' },
   ];
 
