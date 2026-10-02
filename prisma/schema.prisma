@@ -40,3 +40,12 @@ model Fine {
   reason    String
   createdAt DateTime @default(now())
 }
+
+model VehicleAssignment {
+  id        String   @id @default(uuid())
+  vehicle   String
+  driver    String
+  date      String   // Format: YYYY-MM-DD
+  time      String   // Format: HH:MM
+  createdAt DateTime @default(now())
+}

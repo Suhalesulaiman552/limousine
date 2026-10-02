@@ -13,10 +13,17 @@ export default function Home() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showFareModal, setShowFareModal] = useState(false);
   const [showFineModal, setShowFineModal] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
   // Data lists state
   const [bookings, setBookings] = useState<any[]>([]);
   const [fines, setFines] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+
+  // Lookup Tool States
+  const [lookupVehicle, setLookupVehicle] = useState('Toyota Camry');
+  const [lookupDate, setLookupDate] = useState('');
+  const [lookupResult, setLookupResult] = useState<any[] | null>(null);
 
   // New Booking Form States
   const [clientName, setClientName] = useState('');
@@ -34,6 +41,14 @@ export default function Home() {
   const [fineReason, setFineReason] = useState('');
   const [fineLoading, setFineLoading] = useState(false);
   const [fineError, setFineError] = useState('');
+
+  // Vehicle Assignment Form States
+  const [assignVehicle, setAssignVehicle] = useState('Toyota Camry');
+  const [assignDriver, setAssignDriver] = useState('');
+  const [assignDate, setAssignDate] = useState('');
+  const [assignTime, setAssignTime] = useState('');
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [assignError, setAssignError] = useState('');
 
   // Fare Calculator Form States
   const [distanceKm, setDistanceKm] = useState('');
@@ -62,31 +77,29 @@ export default function Home() {
     if (userRole === 'ADMIN') {
       fetchBookings();
       fetchFines();
+      fetchAssignments();
     }
   }, []);
 
   const fetchBookings = async () => {
     try {
       const res = await fetch('/api/bookings');
-      if (res.ok) {
-        const data = await res.json();
-        setBookings(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch bookings', err);
-    }
+      if (res.ok) setBookings(await res.json());
+    } catch (err) { console.error(err); }
   };
 
   const fetchFines = async () => {
     try {
       const res = await fetch('/api/fines');
-      if (res.ok) {
-        const data = await res.json();
-        setFines(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch fines', err);
-    }
+      if (res.ok) setFines(await res.json());
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const res = await fetch('/api/assignments');
+      if (res.ok) setAssignments(await res.json());
+    } catch (err) { console.error(err); }
   };
 
   const handleLogout = () => {
@@ -101,66 +114,67 @@ export default function Home() {
     e.preventDefault();
     setBookingLoading(true);
     setBookingError('');
-
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientName,
-          clientPhone,
-          vehicle: selectedVehicle,
-          pickup: pickupLocation,
-          dropoff: dropoffLocation,
-        }),
+        body: JSON.stringify({ clientName, clientPhone, vehicle: selectedVehicle, pickup: pickupLocation, dropoff: dropoffLocation }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save booking');
-
+      if (!res.ok) throw new Error(data.error || 'Failed');
       await fetchBookings();
       setShowBookingModal(false);
-      setClientName('');
-      setClientPhone('');
-      setPickupLocation('');
-      setDropoffLocation('');
-    } catch (err: any) {
-      setBookingError(err.message);
-    } finally {
-      setBookingLoading(false);
-    }
+      setClientName(''); setClientPhone(''); setPickupLocation(''); setDropoffLocation('');
+    } catch (err: any) { setBookingError(err.message); }
+    finally { setBookingLoading(false); }
   };
 
   const handleCreateFine = async (e: React.FormEvent) => {
     e.preventDefault();
     setFineLoading(true);
     setFineError('');
-
     try {
       const res = await fetch('/api/fines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vehicle: fineVehicle,
-          driver: fineDriver,
-          amount: parseFloat(fineAmount) || 0,
-          reason: fineReason,
-        }),
+        body: JSON.stringify({ vehicle: fineVehicle, driver: fineDriver, amount: parseFloat(fineAmount) || 0, reason: fineReason }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save traffic fine');
-
+      if (!res.ok) throw new Error(data.error || 'Failed');
       await fetchFines();
       setShowFineModal(false);
-      setFineDriver('');
-      setFineAmount('');
-      setFineReason('');
-    } catch (err: any) {
-      setFineError(err.message);
-    } finally {
-      setFineLoading(false);
-    }
+      setFineDriver(''); setFineAmount(''); setFineReason('');
+    } catch (err: any) { setFineError(err.message); }
+    finally { setFineLoading(false); }
+  };
+
+  const handleCreateAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAssignLoading(true);
+    setAssignError('');
+    try {
+      const res = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicle: assignVehicle, driver: assignDriver, date: assignDate, time: assignTime }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      await fetchAssignments();
+      setShowAssignmentModal(false);
+      setAssignDriver(''); setAssignDate(''); setAssignTime('');
+    } catch (err: any) { setAssignError(err.message); }
+    finally { setAssignLoading(false); }
+  };
+
+  const handleLookupDriver = (e: React.FormEvent) => {
+    e.preventDefault();
+    const matched = assignments.filter(a => {
+      const matchVehicle = a.vehicle.toLowerCase().includes(lookupVehicle.toLowerCase());
+      const matchDate = lookupDate ? a.date === lookupDate : true;
+      return matchVehicle && matchDate;
+    });
+    setLookupResult(matched);
   };
 
   const handleCalculateFare = (e: React.FormEvent) => {
@@ -280,9 +294,9 @@ export default function Home() {
             <span className="text-xs text-slate-400 mt-2 block">{fines.length} fines recorded</span>
           </div>
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-lg">
-            <h3 className="text-slate-400 text-xs font-semibold uppercase">Fuel Cost Tracker</h3>
-            <p className="text-3xl font-bold mt-2 text-white">AED 450</p>
-            <span className="text-xs text-slate-400 mt-2 block">Special 95 Rate Applied</span>
+            <h3 className="text-slate-400 text-xs font-semibold uppercase">Shift Assignments</h3>
+            <p className="text-3xl font-bold mt-2 text-amber-400">{assignments.length}</p>
+            <span className="text-xs text-slate-400 mt-2 block">Vehicle logs active</span>
           </div>
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-lg">
             <h3 className="text-slate-400 text-xs font-semibold uppercase">Database Status</h3>
@@ -294,7 +308,7 @@ export default function Home() {
         <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg mb-8">
           <h2 className="text-xl font-semibold mb-4 text-amber-300">Quick Fleet Control</h2>
           <p className="text-slate-300 text-sm mb-6">
-            Manage your daily client calls, log traffic fines, calculate route distances, and review trip fares instantly.
+            Manage bookings, assign drivers to vehicles, log traffic fines, and calculate trip fares instantly.
           </p>
           <div className="flex flex-wrap gap-4">
             <button 
@@ -302,6 +316,12 @@ export default function Home() {
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-5 py-2.5 rounded-lg transition text-sm shadow-md"
             >
               + New Booking
+            </button>
+            <button 
+              onClick={() => setShowAssignmentModal(true)}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg transition text-sm shadow-md"
+            >
+              + Assign Driver to Car
             </button>
             <button 
               onClick={() => setShowFineModal(true)}
@@ -318,11 +338,71 @@ export default function Home() {
           </div>
         </div>
 
+        {/* VEHICLE & DRIVER LOOKUP TOOL */}
+        <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg mb-8">
+          <h2 className="text-xl font-semibold mb-2 text-amber-300">🔍 Vehicle Driver Lookup Tool</h2>
+          <p className="text-slate-400 text-sm mb-4">Select a vehicle and date to find out which driver was assigned.</p>
+          
+          <form onSubmit={handleLookupDriver} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Vehicle</label>
+              <select 
+                value={lookupVehicle} 
+                onChange={e => setLookupVehicle(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+              >
+                <option value="Toyota Corolla">Toyota Corolla</option>
+                <option value="Toyota Camry">Toyota Camry</option>
+                <option value="Kia Carnival">Kia Carnival</option>
+                <option value="Nissan Patrol">Nissan Patrol</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Date (Optional)</label>
+              <input 
+                type="date" 
+                value={lookupDate} 
+                onChange={e => setLookupDate(e.target.value)} 
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+              />
+            </div>
+            <div>
+              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2 rounded-lg text-sm transition">
+                Search Driver
+              </button>
+            </div>
+          </form>
+
+          {lookupResult !== null && (
+            <div className="mt-6 bg-slate-950 border border-slate-800 p-4 rounded-xl">
+              <h3 className="text-xs font-semibold uppercase text-slate-400 mb-3">Lookup Results ({lookupResult.length} found)</h3>
+              {lookupResult.length === 0 ? (
+                <p className="text-sm text-slate-400">No driver records found for this vehicle and date.</p>
+              ) : (
+                <div className="space-y-3">
+                  {lookupResult.map(res => (
+                    <div key={res.id} className="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-800 text-sm">
+                      <div>
+                        <span className="text-amber-400 font-semibold block">{res.driver}</span>
+                        <span className="text-xs text-slate-400">Vehicle: {res.vehicle}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-white font-medium block">{res.date}</span>
+                        <span className="text-xs text-emerald-400">Time: {res.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* LIVE BOOKINGS TABLE */}
         <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg mb-8">
           <h2 className="text-xl font-semibold mb-4 text-amber-300">Active Bookings & Dispatch List</h2>
           {bookings.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4">No bookings logged yet. Click "+ New Booking" above to add one.</p>
+            <p className="text-slate-400 text-sm py-4">No bookings logged yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -395,39 +475,19 @@ export default function Home() {
               <h3 className="text-lg font-bold text-amber-400">Create New Booking</h3>
               <button onClick={() => setShowBookingModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
-
             {bookingError && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{bookingError}</div>}
-
             <form onSubmit={handleCreateBooking} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Name</label>
-                <input 
-                  type="text" 
-                  value={clientName} 
-                  onChange={e => setClientName(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. John Smith"
-                />
+                <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. John Smith" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Phone</label>
-                <input 
-                  type="text" 
-                  value={clientPhone} 
-                  onChange={e => setClientPhone(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="+971501234567"
-                />
+                <input type="text" value={clientPhone} onChange={e => setClientPhone(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="+971501234567" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Assign Vehicle</label>
-                <select 
-                  value={selectedVehicle} 
-                  onChange={e => setSelectedVehicle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-                >
+                <select value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
                   <option value="Toyota Corolla">Toyota Corolla</option>
                   <option value="Toyota Camry">Toyota Camry</option>
                   <option value="Kia Carnival">Kia Carnival</option>
@@ -436,30 +496,60 @@ export default function Home() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Pickup Location</label>
-                <input 
-                  type="text" 
-                  value={pickupLocation} 
-                  onChange={e => setPickupLocation(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. Dubai Airport Terminal 3"
-                />
+                <input type="text" value={pickupLocation} onChange={e => setPickupLocation(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Dubai Airport" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dropoff Location</label>
-                <input 
-                  type="text" 
-                  value={dropoffLocation} 
-                  onChange={e => setDropoffLocation(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. Dibba, Fujairah"
-                />
+                <input type="text" value={dropoffLocation} onChange={e => setDropoffLocation(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Dibba, Fujairah" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowBookingModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
                 <button type="submit" disabled={bookingLoading} className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-50">
                   {bookingLoading ? 'Saving...' : 'Save Booking'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ASSIGN DRIVER TO CAR MODAL */}
+      {showAssignmentModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-blue-400">Assign Driver to Vehicle</h3>
+              <button onClick={() => setShowAssignmentModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+            {assignError && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{assignError}</div>}
+            <form onSubmit={handleCreateAssignment} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Vehicle</label>
+                <select value={assignVehicle} onChange={e => setAssignVehicle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                  <option value="Toyota Corolla">Toyota Corolla</option>
+                  <option value="Toyota Camry">Toyota Camry</option>
+                  <option value="Kia Carnival">Kia Carnival</option>
+                  <option value="Nissan Patrol">Nissan Patrol</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Driver Name</label>
+                <input type="text" value={assignDriver} onChange={e => setAssignDriver(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Ahmed Driver" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Date</label>
+                  <input type="date" value={assignDate} onChange={e => setAssignDate(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Time</label>
+                  <input type="time" value={assignTime} onChange={e => setAssignTime(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAssignmentModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
+                <button type="submit" disabled={assignLoading} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-50">
+                  {assignLoading ? 'Saving...' : 'Save Assignment'}
                 </button>
               </div>
             </form>
@@ -475,17 +565,11 @@ export default function Home() {
               <h3 className="text-lg font-bold text-red-400">Log Traffic Fine</h3>
               <button onClick={() => setShowFineModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
-
             {fineError && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{fineError}</div>}
-
             <form onSubmit={handleCreateFine} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Vehicle</label>
-                <select 
-                  value={fineVehicle} 
-                  onChange={e => setFineVehicle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-                >
+                <select value={fineVehicle} onChange={e => setFineVehicle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
                   <option value="Toyota Corolla">Toyota Corolla</option>
                   <option value="Toyota Camry">Toyota Camry</option>
                   <option value="Kia Carnival">Kia Carnival</option>
@@ -494,37 +578,15 @@ export default function Home() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Driver Name</label>
-                <input 
-                  type="text" 
-                  value={fineDriver} 
-                  onChange={e => setFineDriver(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. Ahmed Driver"
-                />
+                <input type="text" value={fineDriver} onChange={e => setFineDriver(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Ahmed Driver" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Fine Amount (AED)</label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  value={fineAmount} 
-                  onChange={e => setFineAmount(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. 600"
-                />
+                <input type="number" step="0.01" value={fineAmount} onChange={e => setFineAmount(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. 600" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Violation Reason</label>
-                <input 
-                  type="text" 
-                  value={fineReason} 
-                  onChange={e => setFineReason(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. Speeding on Sheikh Zayed Road"
-                />
+                <input type="text" value={fineReason} onChange={e => setFineReason(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Speeding" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowFineModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
@@ -545,60 +607,29 @@ export default function Home() {
               <h3 className="text-lg font-bold text-amber-400">Trip Fare & Fuel Calculator</h3>
               <button onClick={() => setShowFareModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
-
             <form onSubmit={handleCalculateFare} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Distance (KM)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
-                  value={distanceKm} 
-                  onChange={e => setDistanceKm(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  placeholder="e.g. 130"
-                />
+                <input type="number" step="0.1" value={distanceKm} onChange={e => setDistanceKm(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. 130" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Fuel Rate (AED/L)</label>
-                  <input 
-                    type="number" 
-                    step="0.01" 
-                    value={fuelPricePerLitre} 
-                    onChange={e => setFuelPricePerLitre(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  />
+                  <input type="number" step="0.01" value={fuelPricePerLitre} onChange={e => setFuelPricePerLitre(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Efficiency (KM/L)</label>
-                  <input 
-                    type="number" 
-                    step="0.1" 
-                    value={carEfficiency} 
-                    onChange={e => setCarEfficiency(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                  />
+                  <input type="number" step="0.1" value={carEfficiency} onChange={e => setCarEfficiency(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Profit Markup (%)</label>
-                <input 
-                  type="number" 
-                  value={markupPercent} 
-                  onChange={e => setMarkupPercent(e.target.value)} 
-                  required 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                />
+                <input type="number" value={markupPercent} onChange={e => setMarkupPercent(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
               </div>
-
               <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition mt-2">
                 Calculate Estimate
               </button>
             </form>
-
             {fareResult && (
               <div className="mt-6 bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 text-sm">
                 <div className="flex justify-between text-slate-400">
