@@ -2,86 +2,227 @@
 
 import { useEffect, useState } from 'react';
 
-export default function AdminBookingsPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [showModal, setShowModal] = useState(false);
+interface Booking {
+  id: string;
+  clientName: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  bookingDate: string;
+  status: string;
+  vehicle: string;
+}
+
+export default function BookingsPage() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // Form state for creating a new booking
   const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [selectedVehicle, setSelectedVehicle] = useState('Toyota Camry');
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [bookingDate, setBookingDate] = useState('');
+  const [vehicle, setVehicle] = useState('Toyota Camry');
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/bookings');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setBookings(data);
+      } else {
+        setError('Failed to load bookings.');
+      }
+    } catch {
+      setError('Error connecting to database.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchBookings();
   }, []);
 
-  const fetchBookings = async () => {
-    try {
-      const res = await fetch('/api/bookings');
-      if (res.ok) setBookings(await res.json());
-    } catch (err) { console.error(err); }
-  };
-
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError('');
+
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName, clientPhone, vehicle: selectedVehicle, pickup: pickupLocation, dropoff: dropoffLocation }),
+        body: JSON.stringify({
+          clientName,
+          pickupLocation,
+          dropoffLocation,
+          bookingDate: new Date(bookingDate).toISOString(),
+          vehicle,
+          status: 'SCHEDULED'
+        })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      await fetchBookings();
-      setShowModal(false);
-      setClientName(''); setClientPhone(''); setPickupLocation(''); setDropoffLocation('');
-    } catch (err: any) { setError(err.message); }
-    finally { setLoading(false); }
+
+      if (res.ok) {
+        setClientName('');
+        setPickupLocation('');
+        setDropoffLocation('');
+        setBookingDate('');
+        fetchBookings();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to create booking.');
+      }
+    } catch {
+      setError('Network error while saving booking.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-amber-300">Client Bookings & Dispatch</h2>
-          <p className="text-slate-400 text-sm">Manage scheduled client rides and dispatch assignments.</p>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-cyan-600 via-sky-500 to-blue-600 text-white p-6 sm:p-8 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.25)] border border-cyan-300/40">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-[70px] pointer-events-none" />
+        <div className="relative z-10">
+          <span className="bg-white/20 border border-white/30 text-white text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-[0.15em] backdrop-blur-md">
+            Dispatch Hub
+          </span>
+          <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Client Bookings</h2>
+          <p className="text-sky-100 text-xs mt-1 max-w-sm font-light leading-relaxed opacity-90">
+            Schedule, manage, and dispatch active limousine rides across the fleet.
+          </p>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow-md"
-        >
-          + New Booking
-        </button>
       </div>
 
-      <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg">
-        {bookings.length === 0 ? (
-          <p className="text-slate-400 text-sm py-4 text-center">No bookings logged yet.</p>
+      {error && (
+        <div className="bg-rose-500/10 border border-rose-200 text-rose-700 p-4 rounded-2xl text-xs font-medium backdrop-blur-xl">
+          {error}
+        </div>
+      )}
+
+      {/* New Booking Form (Lumina 1 Glass) */}
+      <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-6 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)]">
+        <h3 className="text-xs font-medium text-slate-500 mb-4 tracking-[0.15em] uppercase">Schedule New Ride</h3>
+        <form onSubmit={handleCreateBooking} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Client Name</label>
+            <input
+              type="text"
+              required
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              placeholder="e.g. Sheikh Mohammed"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Pickup Location</label>
+            <input
+              type="text"
+              required
+              value={pickupLocation}
+              onChange={(e) => setPickupLocation(e.target.value)}
+              placeholder="e.g. Berlin Airport BER"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Dropoff Location</label>
+            <input
+              type="text"
+              required
+              value={dropoffLocation}
+              onChange={(e) => setDropoffLocation(e.target.value)}
+              placeholder="e.g. Adlon Kempinski Berlin"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Date & Time</label>
+            <input
+              type="datetime-local"
+              required
+              value={bookingDate}
+              onChange={(e) => setBookingDate(e.target.value)}
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Assigned Vehicle</label>
+            <select
+              value={vehicle}
+              onChange={(e) => setVehicle(e.target.value)}
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            >
+              <option value="Toyota Corolla">Toyota Corolla</option>
+              <option value="Toyota Camry">Toyota Camry</option>
+              <option value="Kia Carnival">Kia Carnival</option>
+              <option value="Nissan Patrol">Nissan Patrol</option>
+            </select>
+          </div>
+
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-xs py-2.5 rounded-xl transition shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-50"
+            >
+              {submitting ? 'Saving...' : '+ Add Booking'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Bookings Table / List */}
+      <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)] overflow-hidden">
+        <div className="p-5 border-b border-sky-100 flex justify-between items-center">
+          <h3 className="text-xs font-medium text-slate-600 tracking-[0.1em] uppercase">Active Dispatches</h3>
+          <span className="text-[11px] text-cyan-700 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-200 font-medium">
+            {bookings.length} Records
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-slate-500 text-xs font-light tracking-widest">
+            LOADING DISPATCH DATA...
+          </div>
+        ) : bookings.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-xs font-light">
+            No active bookings found in database.
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 text-xs uppercase">
-                  <th className="py-3 px-4">Client</th>
-                  <th className="py-3 px-4">Phone</th>
-                  <th className="py-3 px-4">Vehicle</th>
-                  <th className="py-3 px-4">Route</th>
-                  <th className="py-3 px-4">Status</th>
+                <tr className="border-b border-sky-100 text-slate-500 font-medium tracking-[0.05em]">
+                  <th className="p-4">Client</th>
+                  <th className="p-4">Vehicle</th>
+                  <th className="p-4">Route</th>
+                  <th className="p-4">Date / Time</th>
+                  <th className="p-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-sm">
+              <tbody className="divide-y divide-sky-100/60">
                 {bookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-800/50">
-                    <td className="py-3 px-4 font-medium text-white">{b.clientName}</td>
-                    <td className="py-3 px-4 text-slate-300">{b.clientPhone}</td>
-                    <td className="py-3 px-4 text-amber-400">{b.vehicle}</td>
-                    <td className="py-3 px-4 text-slate-300">{b.pickup} ➔ {b.dropoff}</td>
-                    <td className="py-3 px-4">
-                      <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-semibold">
+                  <tr key={b.id} className="hover:bg-white/60 transition">
+                    <td className="p-4 font-normal text-slate-900">{b.clientName}</td>
+                    <td className="p-4 text-cyan-700 font-medium">{b.vehicle}</td>
+                    <td className="p-4 text-slate-600">
+                      <span className="block">{b.pickupLocation}</span>
+                      <span className="text-[10px] text-slate-400">➔ {b.dropoffLocation}</span>
+                    </td>
+                    <td className="p-4 text-slate-600">
+                      {new Date(b.bookingDate).toLocaleString()}
+                    </td>
+                    <td className="p-4">
+                      <span className="bg-cyan-500/10 text-cyan-800 px-2.5 py-1 rounded-md border border-cyan-200 text-[10px] font-medium uppercase tracking-wide">
                         {b.status}
                       </span>
                     </td>
@@ -92,52 +233,6 @@ export default function AdminBookingsPage() {
           </div>
         )}
       </div>
-
-      {/* NEW BOOKING MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-amber-400">Create New Booking</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">✕</button>
-            </div>
-            {error && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{error}</div>}
-            <form onSubmit={handleCreateBooking} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Name</label>
-                <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. John Smith" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Phone</label>
-                <input type="text" value={clientPhone} onChange={e => setClientPhone(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="+971501234567" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Assign Vehicle</label>
-                <select value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                  <option value="Toyota Corolla">Toyota Corolla</option>
-                  <option value="Toyota Camry">Toyota Camry</option>
-                  <option value="Kia Carnival">Kia Carnival</option>
-                  <option value="Nissan Patrol">Nissan Patrol</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Pickup Location</label>
-                <input type="text" value={pickupLocation} onChange={e => setPickupLocation(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Dubai Airport" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dropoff Location</label>
-                <input type="text" value={dropoffLocation} onChange={e => setDropoffLocation(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Dibba, Fujairah" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
-                <button type="submit" disabled={loading} className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-50">
-                  {loading ? 'Saving...' : 'Save Booking'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
