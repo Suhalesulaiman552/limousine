@@ -20,21 +20,14 @@ export default function AssignmentsPage() {
   const [assignedDate, setAssignedDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Fallback direct mock/localStorage sync or standard fetch wrapper
-  const fetchAssignments = useCallback(async () => {
+  const fetchAssignments = useCallback(() => {
     try {
-      const res = await fetch('/api/fleet-assignments');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) setAssignments(data);
-      } else {
-        // Fallback to localStorage if API is unreachable during build/static quirks
-        const local = localStorage.getItem('suhail_assignments');
-        if (local) setAssignments(JSON.parse(local));
+      const local = localStorage.getItem('lumina_assignments');
+      if (local) {
+        setAssignments(JSON.parse(local));
       }
     } catch {
-      const local = localStorage.getItem('suhail_assignments');
-      if (local) setAssignments(JSON.parse(local));
+      setError('Failed to load local assignment records.');
     } finally {
       setLoading(false);
     }
@@ -44,7 +37,7 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, [fetchAssignments]);
 
-  const handleCreateAssignment = async (e: React.FormEvent) => {
+  const handleCreateAssignment = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
@@ -57,30 +50,13 @@ export default function AssignmentsPage() {
     };
 
     try {
-      const res = await fetch('/api/fleet-assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEntry),
-      });
-
-      if (res.ok) {
-        setDriverName('');
-        setAssignedDate('');
-        fetchAssignments();
-      } else {
-        // Fallback client-side state update if backend route is blocked
-        const updated = [newEntry, ...assignments];
-        setAssignments(updated);
-        localStorage.setItem('suhail_assignments', JSON.stringify(updated));
-        setDriverName('');
-        setAssignedDate('');
-      }
-    } catch {
       const updated = [newEntry, ...assignments];
       setAssignments(updated);
-      localStorage.setItem('suhail_assignments', JSON.stringify(updated));
+      localStorage.setItem('lumina_assignments', JSON.stringify(updated));
       setDriverName('');
       setAssignedDate('');
+    } catch {
+      setError('Failed to save assignment record.');
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +73,7 @@ export default function AssignmentsPage() {
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Vehicle Shift Assignments</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-sm font-light leading-relaxed opacity-90">
-            Assign drivers to fleet vehicles by date for accountability and fine tracking under Lumina 1.
+            Assign drivers to fleet vehicles by date for accountability under Lumina 1.
           </p>
         </div>
       </div>
@@ -108,7 +84,7 @@ export default function AssignmentsPage() {
         </div>
       )}
 
-      {/* New Assignment Form (Lumina 1 Glass) */}
+      {/* New Assignment Form */}
       <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-6 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)]">
         <h3 className="text-xs font-medium text-slate-500 mb-4 tracking-[0.15em] uppercase">New Shift Assignment</h3>
         <form onSubmit={handleCreateAssignment} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -161,7 +137,7 @@ export default function AssignmentsPage() {
         </form>
       </div>
 
-      {/* Assignments Table / List */}
+      {/* Assignments Table */}
       <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)] overflow-hidden">
         <div className="p-5 border-b border-sky-100 flex justify-between items-center">
           <h3 className="text-xs font-medium text-slate-600 tracking-[0.1em] uppercase">Active Shift Logs</h3>
