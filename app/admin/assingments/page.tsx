@@ -22,7 +22,7 @@ export default function AssignmentsPage() {
 
   const fetchAssignments = async () => {
     try {
-      const res = await fetch('/api/assignments');
+      const res = await fetch('/api/fleet-assignments');
       const data = await res.json();
       if (Array.isArray(data)) {
         setAssignments(data);
@@ -46,7 +46,7 @@ export default function AssignmentsPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/assignments', {
+      const res = await fetch('/api/fleet-assignments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ export default function AssignmentsPage() {
         </div>
       )}
 
-      {/* New Assignment Form (Lumina 1 Glass) */}
+      {/* New Assignment Form */}
       <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-6 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)]">
         <h3 className="text-xs font-medium text-slate-500 mb-4 tracking-[0.15em] uppercase">New Shift Assignment</h3>
         <form onSubmit={handleCreateAssignment} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -146,7 +146,7 @@ export default function AssignmentsPage() {
         </form>
       </div>
 
-      {/* Assignments Table / List */}
+      {/* Assignments Table */}
       <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)] overflow-hidden">
         <div className="p-5 border-b border-sky-100 flex justify-between items-center">
           <h3 className="text-xs font-medium text-slate-600 tracking-[0.1em] uppercase">Active Shift Logs</h3>
