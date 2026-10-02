@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-[#f4f6f0] flex items-center justify-center text-[#2c382b] font-bold tracking-widest">
-        INITIALIZING SECURE PORTAL...
+      <div className="min-h-screen bg-[#1e271d] flex items-center justify-center text-[#dce5d3] font-bold tracking-widest">
+        INITIALIZING ARCHITECTURAL GRID...
       </div>
     );
   }
@@ -47,29 +47,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f4f6f0] via-[#edf2e6] to-[#d8e2cf] text-[#2c382b] p-4 sm:p-6 md:p-10 font-sans selection:bg-[#0284c7] selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#2c382b] via-[#243023] to-[#1a2319] text-[#f4f6f0] p-4 sm:p-6 md:p-10 font-sans selection:bg-[#0284c7] selection:text-white">
       <div className="max-w-6xl mx-auto">
-        {/* Top Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-stone-300/80 gap-4">
+        {/* Structural Header (Inverted Solid Olive Block) */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-white/10 gap-4 bg-white/5 backdrop-blur-xl p-6 rounded-3xl shadow-xl">
           <div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-[#0284c7] shadow-[0_0_12px_rgba(2,132,199,0.6)] animate-pulse" />
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#1a2319]">Al-Suhail Limousine</h1>
+              <span className="w-3 h-3 rounded-full bg-[#0284c7] shadow-[0_0_15px_rgba(2,132,199,0.9)] animate-pulse" />
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">Al-Suhail Limousine</h1>
             </div>
-            <p className="text-[#3c4f3a] font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Executive Dispatch</p>
+            <p className="text-[#dce5d3] font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Structural Command Grid</p>
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="bg-[#2c382b] text-[#f4f6f0] px-4 py-1.5 rounded-xl text-xs font-black tracking-wider uppercase shadow-md">
+            <div className="bg-[#0284c7] text-white px-4 py-2 rounded-xl text-xs font-black tracking-wider uppercase shadow-md">
               ADMINISTRATOR
             </div>
-            <button onClick={handleLogout} className="bg-rose-600/10 hover:bg-rose-600/20 text-rose-700 border border-rose-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+            <button onClick={handleLogout} className="bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm">
               Sign Out
             </button>
           </div>
         </header>
 
-        {/* Navigation Tabs */}
-        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-white/70 backdrop-blur-xl p-2 rounded-2xl border border-stone-200/90 shadow-lg shadow-stone-900/5">
+        {/* Architectural Navigation Bar */}
+        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-[#1e271d]/90 backdrop-blur-2xl p-2.5 rounded-2xl border border-white/10 shadow-2xl">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -78,8 +78,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={link.href}
                 className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all duration-300 ${
                   isActive
-                    ? 'bg-[#2c382b] text-white shadow-md scale-[1.02]'
-                    : 'text-[#4a5d48] hover:text-[#1a2319] hover:bg-stone-100/80'
+                    ? 'bg-gradient-to-r from-[#0284c7] to-sky-400 text-slate-950 shadow-[0_0_20px_rgba(2,132,199,0.5)] scale-[1.02]'
+                    : 'text-[#dce5d3] hover:text-white hover:bg-white/10'
                 }`}
               >
                 {link.name}
