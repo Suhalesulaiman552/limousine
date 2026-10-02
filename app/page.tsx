@@ -9,8 +9,13 @@ export default function Home() {
             <h1 className="text-3xl font-bold tracking-tight text-amber-400">Al-Suhail Limousine Fleet</h1>
             <p className="text-slate-400 text-sm mt-1">Operations & Management Dashboard (Connected to Neon DB)</p>
           </div>
-          <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 text-sm">
-            Status: <span className="text-emerald-400 font-semibold">● Online</span>
+          <div className="flex items-center gap-4">
+            <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 text-sm">
+              Status: <span className="text-emerald-400 font-semibold">● Online</span>
+            </div>
+            <a href="/login" className="bg-slate-800 hover:bg-slate-700 text-amber-400 px-4 py-2 rounded-lg border border-slate-700 text-sm font-medium transition">
+              Sign In / Register
+            </a>
           </div>
         </header>
 

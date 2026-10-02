@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Limousine Fleet Management",
-  description: "Manage your transport and limousine fleet easily.",
+  title: "Al-Suhail Limousine Fleet",
+  description: "Limousine & Transport Fleet Management System",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased bg-slate-950 text-white">
         {children}
       </body>
     </html>

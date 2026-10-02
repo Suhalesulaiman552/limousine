@@ -7,35 +7,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Driver {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
   password  String
-  status    String   @default("AVAILABLE")
-  trips     Trip[]
-  petrols   Petrol[]
+  role      Role     @default(DRIVER)
   createdAt DateTime @default(now())
 }
 
-model Trip {
-  id           Int      @id @default(autoincrement())
-  driverId     Int
-  driver       Driver   @relation(fields: [driverId], references: [id])
-  customerName String
-  phone        String
-  destination  String
-  price        Float
-  date         String
-  createdAt    DateTime @default(now())
-}
-
-model Petrol {
-  id         Int      @id @default(autoincrement())
-  driverId   Int
-  driver     Driver   @relation(fields: [driverId], references: [id])
-  liters     Float
-  cost       Float
-  receiptUrl String?
-  date       String
-  createdAt  DateTime @default(now())
+enum Role {
+  ADMIN
+  DRIVER
 }
