@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-[#1e271d] flex items-center justify-center text-[#dce5d3] font-bold tracking-widest">
-        INITIALIZING HOLOGRAPHIC GRID...
+      <div className="min-h-screen bg-gradient-to-br from-white via-sky-50 to-blue-100 flex items-center justify-center text-blue-600 font-bold tracking-widest">
+        INITIALIZING LIQUID BLUE GRID...
       </div>
     );
   }
@@ -47,29 +47,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2c382b] via-[#243023] to-[#1a2319] text-[#f4f6f0] p-4 sm:p-6 md:p-10 font-sans selection:bg-[#0284c7] selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-white via-sky-50 to-blue-100 text-slate-900 p-4 sm:p-6 md:p-10 font-sans selection:bg-blue-500 selection:text-white">
       <div className="max-w-6xl mx-auto">
-        {/* Holographic Glass Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-cyan-400/20 gap-4 bg-white/[0.04] backdrop-blur-2xl p-6 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] border border-cyan-400/20">
+        {/* Liquid Glass Header */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-blue-200/60 gap-4 bg-white/60 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_8px_32px_0_rgba(0,120,255,0.08)] border border-blue-200">
           <div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.9)] animate-pulse" />
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">Al-Suhail Limousine</h1>
+              <span className="w-3 h-3 rounded-full bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.8)] animate-pulse" />
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Al-Suhail Limousine</h1>
             </div>
-            <p className="text-cyan-300 font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Holographic Dispatch Console</p>
+            <p className="text-blue-600 font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Liquid Holographic Dispatch</p>
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="bg-cyan-500/10 text-cyan-300 border border-cyan-400/30 px-4 py-2 rounded-2xl text-xs font-black tracking-wider uppercase backdrop-blur-md shadow-sm">
+            <div className="bg-blue-600/10 text-blue-700 border border-blue-300 px-4 py-2 rounded-2xl text-xs font-black tracking-wider uppercase backdrop-blur-md shadow-sm">
               ADMINISTRATOR
             </div>
-            <button onClick={handleLogout} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-4 py-2 rounded-2xl text-xs font-bold transition backdrop-blur-md shadow-sm">
+            <button onClick={handleLogout} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 border border-rose-300 px-4 py-2 rounded-2xl text-xs font-bold transition backdrop-blur-md shadow-sm">
               Sign Out
             </button>
           </div>
         </header>
 
-        {/* Holographic Navigation Bar */}
-        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-white/[0.03] backdrop-blur-2xl p-2.5 rounded-2xl border border-cyan-400/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)]">
+        {/* Liquid Holographic Navigation Bar */}
+        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-white/60 backdrop-blur-2xl p-2.5 rounded-2xl border border-blue-200 shadow-[0_8px_32px_0_rgba(0,120,255,0.06)]">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -78,8 +78,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={link.href}
                 className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all duration-300 ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 shadow-[0_0_25px_rgba(34,211,238,0.5)] scale-[1.02]'
-                    : 'text-[#dce5d3] hover:text-white hover:bg-white/10'
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] scale-[1.02]'
+                    : 'text-slate-600 hover:text-slate-950 hover:bg-blue-50'
                 }`}
               >
                 {link.name}
