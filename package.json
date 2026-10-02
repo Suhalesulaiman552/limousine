@@ -9,13 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^5.x.x",
-    "react": "^18 or 19",
-    "react-dom": "^18 or 19",
-    "next": "14 or 15"
+    "@prisma/client": "^5.19.0",
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "prisma": "^5.x.x",
-    "typescript": "^5"
+    "prisma": "^5.19.0",
+    "typescript": "^5.5.4",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0"
   }
 }
