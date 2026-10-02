@@ -2,84 +2,223 @@
 
 import { useEffect, useState } from 'react';
 
-export default function AdminFinesPage() {
-  const [fines, setFines] = useState<any[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [fineVehicle, setFineVehicle] = useState('Toyota Camry');
-  const [fineDriver, setFineDriver] = useState('');
-  const [fineAmount, setFineAmount] = useState('');
-  const [fineReason, setFineReason] = useState('');
-  const [loading, setLoading] = useState(false);
+interface Fine {
+  id: string;
+  vehicleNumber: string;
+  violation: string;
+  amount: number;
+  fineDate: string;
+  paid: boolean;
+}
+
+export default function FinesPage() {
+  const [fines, setFines] = useState<Fine[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Form state
+  const [vehicleNumber, setVehicleNumber] = useState('Toyota Camry');
+  const [violation, setViolation] = useState('');
+  const [amount, setAmount] = useState('');
+  const [fineDate, setFineDate] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchFines = async () => {
+    try {
+      const res = await fetch('/api/fines');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setFines(data);
+      } else {
+        setError('Failed to load traffic fines.');
+      }
+    } catch {
+      setError('Error connecting to database.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchFines();
   }, []);
 
-  const fetchFines = async () => {
-    try {
-      const res = await fetch('/api/fines');
-      if (res.ok) setFines(await res.json());
-    } catch (err) { console.error(err); }
-  };
-
   const handleCreateFine = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError('');
+
     try {
       const res = await fetch('/api/fines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vehicle: fineVehicle, driver: fineDriver, amount: parseFloat(fineAmount) || 0, reason: fineReason }),
+        body: JSON.stringify({
+          vehicleNumber,
+          violation,
+          amount: parseFloat(amount),
+          fineDate: new Date(fineDate).toISOString(),
+          paid: false
+        })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      await fetchFines();
-      setShowModal(false);
-      setFineDriver(''); setFineAmount(''); setFineReason('');
-    } catch (err: any) { setError(err.message); }
-    finally { setLoading(false); }
+
+      if (res.ok) {
+        setViolation('');
+        setAmount('');
+        setFineDate('');
+        fetchFines();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to record fine.');
+      }
+    } catch {
+      setError('Network error while saving fine.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const totalFinesAmount = fines.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-red-400">Traffic Fines & Violations Log</h2>
-          <p className="text-slate-400 text-sm">Total Fines Recorded: AED {totalFinesAmount.toFixed(2)}</p>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-rose-600 via-rose-500 to-pink-600 text-white p-6 sm:p-8 rounded-2xl shadow-[0_10px_30px_rgba(244,63,94,0.25)] border border-rose-300/40">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-[70px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span className="bg-white/20 border border-white/30 text-white text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-[0.15em] backdrop-blur-md">
+              Compliance Hub
+            </span>
+            <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Traffic Fines & Violations</h2>
+            <p className="text-rose-100 text-xs mt-1 max-w-sm font-light leading-relaxed opacity-90">
+              Track vehicle penalties, violation amounts, and settlement statuses across the fleet.
+            </p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-3 rounded-2xl text-right">
+            <span className="text-[10px] uppercase tracking-[0.15em] text-rose-100 block">Total Penalties</span>
+            <span className="text-xl font-medium text-white">AED {totalFinesAmount.toFixed(0)}</span>
+          </div>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="bg-red-900/60 hover:bg-red-900 text-red-200 border border-red-800 font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow-md"
-        >
-          + Log Traffic Fine
-        </button>
       </div>
 
-      <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg">
-        {fines.length === 0 ? (
-          <p className="text-slate-400 text-sm py-4 text-center">No traffic fines recorded yet.</p>
+      {error && (
+        <div className="bg-rose-500/10 border border-rose-200 text-rose-700 p-4 rounded-2xl text-xs font-medium backdrop-blur-xl">
+          {error}
+        </div>
+      )}
+
+      {/* New Fine Form (Lumina 1 Glass) */}
+      <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-6 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)]">
+        <h3 className="text-xs font-medium text-slate-500 mb-4 tracking-[0.15em] uppercase">Record New Violation</h3>
+        <form onSubmit={handleCreateFine} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Vehicle</label>
+            <select
+              value={vehicleNumber}
+              onChange={(e) => setVehicleNumber(e.target.value)}
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-rose-400 transition"
+            >
+              <option value="Toyota Corolla">Toyota Corolla</option>
+              <option value="Toyota Camry">Toyota Camry</option>
+              <option value="Kia Carnival">Kia Carnival</option>
+              <option value="Nissan Patrol">Nissan Patrol</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Violation Description</label>
+            <input
+              type="text"
+              required
+              value={violation}
+              onChange={(e) => setViolation(e.target.value)}
+              placeholder="e.g. Speeding / Radar 120km/h"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-rose-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Amount (AED)</label>
+            <input
+              type="number"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="e.g. 600"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-rose-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Fine Date</label>
+            <input
+              type="datetime-local"
+              required
+              value={fineDate}
+              onChange={(e) => setFineDate(e.target.value)}
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-rose-400 transition"
+            />
+          </div>
+
+          <div className="sm:col-span-2 lg:col-span-4 flex justify-end">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs px-6 py-2.5 rounded-xl transition shadow-[0_0_15px_rgba(244,63,94,0.3)] disabled:opacity-50"
+            >
+              {submitting ? 'Recording...' : '+ Add Violation Record'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Fines Table / List */}
+      <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 rounded-2xl shadow-[0_4px_24px_0_rgba(2,132,199,0.06)] overflow-hidden">
+        <div className="p-5 border-b border-sky-100 flex justify-between items-center">
+          <h3 className="text-xs font-medium text-slate-600 tracking-[0.1em] uppercase">Violation Logs</h3>
+          <span className="text-[11px] text-rose-700 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-200 font-medium">
+            {fines.length} Penalties
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-slate-500 text-xs font-light tracking-widest">
+            LOADING COMPLIANCE DATA...
+          </div>
+        ) : fines.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-xs font-light">
+            No traffic fines recorded. Excellent driving record!
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 text-xs uppercase">
-                  <th className="py-3 px-4">Vehicle</th>
-                  <th className="py-3 px-4">Driver</th>
-                  <th className="py-3 px-4">Reason / Violation</th>
-                  <th className="py-3 px-4">Amount</th>
+                <tr className="border-b border-sky-100 text-slate-500 font-medium tracking-[0.05em]">
+                  <th className="p-4">Vehicle</th>
+                  <th className="p-4">Violation</th>
+                  <th className="p-4">Amount</th>
+                  <th className="p-4">Date / Time</th>
+                  <th className="p-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-sm">
+              <tbody className="divide-y divide-sky-100/60">
                 {fines.map((f) => (
-                  <tr key={f.id} className="hover:bg-slate-800/50">
-                    <td className="py-3 px-4 font-medium text-amber-400">{f.vehicle}</td>
-                    <td className="py-3 px-4 text-white">{f.driver}</td>
-                    <td className="py-3 px-4 text-slate-300">{f.reason}</td>
-                    <td className="py-3 px-4 text-red-400 font-bold">AED {f.amount.toFixed(2)}</td>
+                  <tr key={f.id} className="hover:bg-white/60 transition">
+                    <td className="p-4 font-medium text-slate-900">{f.vehicleNumber}</td>
+                    <td className="p-4 text-slate-700">{f.violation}</td>
+                    <td className="p-4 font-medium text-rose-600">AED {f.amount.toFixed(2)}</td>
+                    <td className="p-4 text-slate-600">
+                      {new Date(f.fineDate).toLocaleString()}
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-md border text-[10px] font-medium uppercase tracking-wide ${
+                        f.paid 
+                          ? 'bg-emerald-500/10 text-emerald-800 border-emerald-200' 
+                          : 'bg-rose-500/10 text-rose-800 border-rose-200'
+                      }`}>
+                        {f.paid ? 'Settled' : 'Unpaid'}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -87,48 +226,6 @@ export default function AdminFinesPage() {
           </div>
         )}
       </div>
-
-      {/* LOG FINE MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-red-400">Log Traffic Fine</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">✕</button>
-            </div>
-            {error && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{error}</div>}
-            <form onSubmit={handleCreateFine} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Vehicle</label>
-                <select value={fineVehicle} onChange={e => setFineVehicle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                  <option value="Toyota Corolla">Toyota Corolla</option>
-                  <option value="Toyota Camry">Toyota Camry</option>
-                  <option value="Kia Carnival">Kia Carnival</option>
-                  <option value="Nissan Patrol">Nissan Patrol</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Driver Name</label>
-                <input type="text" value={fineDriver} onChange={e => setFineDriver(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Ahmed Driver" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Fine Amount (AED)</label>
-                <input type="number" step="0.01" value={fineAmount} onChange={e => setFineAmount(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. 600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Violation Reason</label>
-                <input type="text" value={fineReason} onChange={e => setFineReason(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="e.g. Speeding" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
-                <button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-50">
-                  {loading ? 'Saving...' : 'Save Fine'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
