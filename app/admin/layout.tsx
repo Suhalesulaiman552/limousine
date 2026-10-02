@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-sky-50 flex items-center justify-center text-cyan-600 font-bold tracking-widest">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-cyan-400 font-bold tracking-widest">
         INITIALIZING SECURE PORTAL...
       </div>
     );
@@ -47,29 +47,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-white to-sky-50 text-slate-900 p-4 sm:p-6 md:p-10 font-sans selection:bg-cyan-400 selection:text-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-sky-950 to-blue-950 text-slate-100 p-4 sm:p-6 md:p-10 font-sans selection:bg-cyan-400 selection:text-slate-950">
       <div className="max-w-6xl mx-auto">
         {/* Top Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-sky-200/80 gap-4">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-sky-500/20 gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.8)] animate-pulse" />
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Al-Suhail Limousine</h1>
+              <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.9)] animate-pulse" />
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">Al-Suhail Limousine</h1>
             </div>
-            <p className="text-cyan-700 font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Executive Dispatch</p>
+            <p className="text-cyan-300 font-extrabold text-xs sm:text-sm mt-1 tracking-wider uppercase">Executive Dispatch</p>
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="bg-sky-500/10 text-sky-800 px-4 py-1.5 rounded-xl border border-sky-300 text-xs font-black tracking-wider uppercase shadow-sm">
+            <div className="bg-sky-500/10 text-cyan-300 px-4 py-1.5 rounded-xl border border-sky-400/30 text-xs font-black tracking-wider uppercase shadow-md backdrop-blur-md">
               ADMINISTRATOR
             </div>
-            <button onClick={handleLogout} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 border border-rose-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+            <button onClick={handleLogout} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-md backdrop-blur-md">
               Sign Out
             </button>
           </div>
         </header>
 
         {/* Navigation Tabs */}
-        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-white/70 backdrop-blur-xl p-2 rounded-2xl border border-sky-200 shadow-xl shadow-sky-900/5">
+        <nav className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none bg-sky-950/60 backdrop-blur-2xl p-2 rounded-2xl border border-sky-500/20 shadow-2xl">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -78,8 +78,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={link.href}
                 className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all duration-300 ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-500 to-sky-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] scale-[1.02]'
-                    : 'text-slate-600 hover:text-slate-950 hover:bg-sky-100/60'
+                    ? 'bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.5)] scale-[1.02]'
+                    : 'text-slate-300 hover:text-white hover:bg-sky-900/50'
                 }`}
               >
                 {link.name}
