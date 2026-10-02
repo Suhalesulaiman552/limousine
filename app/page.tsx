@@ -13,19 +13,23 @@ export default function Home() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showFareModal, setShowFareModal] = useState(false);
 
+  // Bookings list state
+  const [bookings, setBookings] = useState<any[]>([]);
+
   // New Booking Form States
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState('Toyota Camry');
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
-  const [bookingSuccess, setBookingSuccess] = useState('');
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState('');
 
   // Fare Calculator Form States
   const [distanceKm, setDistanceKm] = useState('');
-  const [fuelPricePerLitre, setFuelPricePerLitre] = useState('3.15'); // UAE Special 95 reference rate
-  const [carEfficiency, setCarEfficiency] = useState('10'); // km per litre average
-  const [markupPercent, setMarkupPercent] = useState('30'); // profit markup
+  const [fuelPricePerLitre, setFuelPricePerLitre] = useState('3.15'); 
+  const [carEfficiency, setCarEfficiency] = useState('10'); 
+  const [markupPercent, setMarkupPercent] = useState('30'); 
   const [fareResult, setFareResult] = useState<any>(null);
 
   const router = useRouter();
@@ -44,7 +48,23 @@ export default function Home() {
     setRole(userRole);
     setName(userName);
     setLoading(false);
+
+    if (userRole === 'ADMIN') {
+      fetchBookings();
+    }
   }, []);
+
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/bookings');
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch bookings', err);
+    }
+  };
 
   const handleLogout = () => {
     document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
@@ -54,17 +74,38 @@ export default function Home() {
     router.push('/login');
   };
 
-  const handleCreateBooking = (e: React.FormEvent) => {
+  const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBookingSuccess(`Booking successfully created for ${clientName} (${selectedVehicle})!`);
-    setTimeout(() => {
+    setBookingLoading(true);
+    setBookingError('');
+
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName,
+          clientPhone,
+          vehicle: selectedVehicle,
+          pickup: pickupLocation,
+          dropoff: dropoffLocation,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save booking');
+
+      await fetchBookings();
       setShowBookingModal(false);
-      setBookingSuccess('');
       setClientName('');
       setClientPhone('');
       setPickupLocation('');
       setDropoffLocation('');
-    }, 2000);
+    } catch (err: any) {
+      setBookingError(err.message);
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   const handleCalculateFare = (e: React.FormEvent) => {
@@ -177,9 +218,9 @@ export default function Home() {
             <span className="text-xs text-amber-400 mt-2 block">Corolla, Camry, Kia, Patrol</span>
           </div>
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-lg">
-            <h3 className="text-slate-400 text-xs font-semibold uppercase">Today's Bookings</h3>
-            <p className="text-3xl font-bold mt-2 text-white">12</p>
-            <span className="text-xs text-emerald-400 mt-2 block">+3 scheduled for evening</span>
+            <h3 className="text-slate-400 text-xs font-semibold uppercase">Total Bookings</h3>
+            <p className="text-3xl font-bold mt-2 text-white">{bookings.length}</p>
+            <span className="text-xs text-emerald-400 mt-2 block">Synced with Neon DB</span>
           </div>
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-lg">
             <h3 className="text-slate-400 text-xs font-semibold uppercase">Fuel Cost Tracker</h3>
@@ -193,7 +234,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg">
+        <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg mb-8">
           <h2 className="text-xl font-semibold mb-4 text-amber-300">Quick Fleet Control</h2>
           <p className="text-slate-300 text-sm mb-6">
             Manage your daily client calls, calculate route distances, and review trip fares instantly.
@@ -213,6 +254,43 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        {/* LIVE BOOKINGS TABLE */}
+        <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg">
+          <h2 className="text-xl font-semibold mb-4 text-amber-300">Active Bookings & Dispatch List</h2>
+          {bookings.length === 0 ? (
+            <p className="text-slate-400 text-sm py-4">No bookings logged yet. Click "+ New Booking" above to add one.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 text-xs uppercase">
+                    <th className="py-3 px-4">Client</th>
+                    <th className="py-3 px-4">Phone</th>
+                    <th className="py-3 px-4">Vehicle</th>
+                    <th className="py-3 px-4">Route</th>
+                    <th className="py-3 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 text-sm">
+                  {bookings.map((b) => (
+                    <tr key={b.id} className="hover:bg-slate-800/50">
+                      <td className="py-3 px-4 font-medium text-white">{b.clientName}</td>
+                      <td className="py-3 px-4 text-slate-300">{b.clientPhone}</td>
+                      <td className="py-3 px-4 text-amber-400">{b.vehicle}</td>
+                      <td className="py-3 px-4 text-slate-300">{b.pickup} ➔ {b.dropoff}</td>
+                      <td className="py-3 px-4">
+                        <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-semibold">
+                          {b.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* NEW BOOKING MODAL */}
@@ -224,75 +302,73 @@ export default function Home() {
               <button onClick={() => setShowBookingModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            {bookingSuccess ? (
-              <div className="bg-emerald-950/60 border border-emerald-800 text-emerald-300 p-4 rounded-xl text-sm text-center">
-                {bookingSuccess}
+            {bookingError && <div className="bg-red-950/50 border border-red-800 text-red-300 p-3 rounded-lg text-sm mb-4">{bookingError}</div>}
+
+            <form onSubmit={handleCreateBooking} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Name</label>
+                <input 
+                  type="text" 
+                  value={clientName} 
+                  onChange={e => setClientName(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  placeholder="e.g. John Smith"
+                />
               </div>
-            ) : (
-              <form onSubmit={handleCreateBooking} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Name</label>
-                  <input 
-                    type="text" 
-                    value={clientName} 
-                    onChange={e => setClientName(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                    placeholder="e.g. John Smith"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Phone</label>
-                  <input 
-                    type="text" 
-                    value={clientPhone} 
-                    onChange={e => setClientPhone(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                    placeholder="+971501234567"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Assign Vehicle</label>
-                  <select 
-                    value={selectedVehicle} 
-                    onChange={e => setSelectedVehicle(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="Toyota Corolla">Toyota Corolla</option>
-                    <option value="Toyota Camry">Toyota Camry</option>
-                    <option value="Kia Carnival">Kia Carnival</option>
-                    <option value="Nissan Patrol">Nissan Patrol</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Pickup Location</label>
-                  <input 
-                    type="text" 
-                    value={pickupLocation} 
-                    onChange={e => setPickupLocation(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                    placeholder="e.g. Dubai Airport Terminal 3"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dropoff Location</label>
-                  <input 
-                    type="text" 
-                    value={dropoffLocation} 
-                    onChange={e => setDropoffLocation(e.target.value)} 
-                    required 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
-                    placeholder="e.g. Dibba, Fujairah"
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowBookingModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
-                  <button type="submit" className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition">Save Booking</button>
-                </div>
-              </form>
-            )}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Client Phone</label>
+                <input 
+                  type="text" 
+                  value={clientPhone} 
+                  onChange={e => setClientPhone(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  placeholder="+971501234567"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Assign Vehicle</label>
+                <select 
+                  value={selectedVehicle} 
+                  onChange={e => setSelectedVehicle(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                >
+                  <option value="Toyota Corolla">Toyota Corolla</option>
+                  <option value="Toyota Camry">Toyota Camry</option>
+                  <option value="Kia Carnival">Kia Carnival</option>
+                  <option value="Nissan Patrol">Nissan Patrol</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Pickup Location</label>
+                <input 
+                  type="text" 
+                  value={pickupLocation} 
+                  onChange={e => setPickupLocation(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  placeholder="e.g. Dubai Airport Terminal 3"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dropoff Location</label>
+                <input 
+                  type="text" 
+                  value={dropoffLocation} 
+                  onChange={e => setDropoffLocation(e.target.value)} 
+                  required 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" 
+                  placeholder="e.g. Dibba, Fujairah"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowBookingModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-sm transition">Cancel</button>
+                <button type="submit" disabled={bookingLoading} className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-50">
+                  {bookingLoading ? 'Saving...' : 'Save Booking'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

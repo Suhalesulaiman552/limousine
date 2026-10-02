@@ -7,6 +7,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  ADMIN
+  DRIVER
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -16,7 +21,13 @@ model User {
   createdAt DateTime @default(now())
 }
 
-enum Role {
-  ADMIN
-  DRIVER
+model Booking {
+  id          String   @id @default(uuid())
+  clientName  String
+  clientPhone String
+  vehicle     String
+  pickup      String
+  dropoff     String
+  status      String   @default("SCHEDULED")
+  createdAt   DateTime @default(now())
 }
