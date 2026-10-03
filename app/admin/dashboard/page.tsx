@@ -6,21 +6,18 @@ import Link from 'next/link';
 export default function AdminDashboard() {
   const [bookingsCount, setBookingsCount] = useState(0);
   const [finesTotal, setFinesTotal] = useState(0);
-  const [assignmentsCount, setAssignmentsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/bookings').then(res => res.json()).catch(() => []),
       fetch('/api/fines').then(res => res.json()).catch(() => []),
-      fetch('/api/assignments').then(res => res.json()).catch(() => []),
-    ]).then(([bookingsData, finesData, assignmentsData]) => {
+    ]).then(([bookingsData, finesData]) => {
       if (Array.isArray(bookingsData)) setBookingsCount(bookingsData.length);
       if (Array.isArray(finesData)) {
         const sum = finesData.reduce((acc, curr) => acc + (curr.amount || 0), 0);
         setFinesTotal(sum);
       }
-      if (Array.isArray(assignmentsData)) setAssignmentsCount(assignmentsData.length);
       setLoading(false);
     });
   }, []);
@@ -45,8 +42,8 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {/* Stats Cards Grid (Minimalist Floating Glass) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Cards Grid (Assignments card removed, now 3 clean cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-5 rounded-2xl shadow-[0_4px_20px_0_rgba(2,132,199,0.06)] hover:border-cyan-400 transition-all duration-300">
           <h3 className="text-slate-500 text-[11px] font-medium tracking-[0.1em] uppercase">Total Bookings</h3>
           <p className="text-2xl sm:text-3xl font-light mt-2 text-slate-900">
@@ -69,17 +66,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-5 rounded-2xl shadow-[0_4px_20px_0_rgba(2,132,199,0.06)] hover:border-cyan-400 transition-all duration-300">
-          <h3 className="text-slate-500 text-[11px] font-medium tracking-[0.1em] uppercase">Assignments</h3>
-          <p className="text-2xl sm:text-3xl font-light mt-2 text-slate-900">
-            {loading ? '...' : assignmentsCount}
-          </p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-            <span className="text-[10px] text-cyan-700 font-medium tracking-wide">Active</span>
-          </div>
-        </div>
-
         <div className="bg-white/50 backdrop-blur-xl border border-sky-200/80 p-5 rounded-2xl shadow-[0_4px_20px_0_rgba(2,132,199,0.06)] hover:border-emerald-400 transition-all duration-300">
           <h3 className="text-slate-500 text-[11px] font-medium tracking-[0.1em] uppercase">Database</h3>
           <p className="text-2xl sm:text-3xl font-light mt-2 text-emerald-600">Online</p>
@@ -90,7 +76,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Quick Navigation Hub (Minimalist Modules) */}
+      {/* Quick Navigation Hub (Assignments shortcut removed) */}
       <div>
         <h3 className="text-xs font-medium text-slate-500 mb-3 tracking-[0.15em] uppercase">Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -116,18 +102,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
-          <Link href="/admin/assignments" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-cyan-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center">
-            <div>
-              <span className="text-[10px] text-cyan-700 font-medium tracking-[0.1em] uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-200">Operations</span>
-              <h4 className="text-base font-normal text-slate-900 mt-2 group-hover:text-cyan-600 transition">Vehicle Shift Lookup</h4>
-              <p className="text-slate-500 text-xs font-light mt-0.5">Find out which driver was driving any car on any date.</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm text-sm">
-              ➔
-            </div>
-          </Link>
-
-          <Link href="/admin/calculator" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-cyan-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center">
+          <Link href="/admin/calculator" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-cyan-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center sm:col-span-2">
             <div>
               <span className="text-[10px] text-cyan-700 font-medium tracking-[0.1em] uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-200">Finance</span>
               <h4 className="text-base font-normal text-slate-900 mt-2 group-hover:text-cyan-600 transition">Trip Fare Calculator</h4>
