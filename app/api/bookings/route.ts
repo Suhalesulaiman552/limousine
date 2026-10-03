@@ -1,24 +1,15 @@
 import { NextResponse } from 'next/server';
-
-// Temporary in-memory fallback list if database is unreachable
-let mockBookings: any[] = [
-  {
-    id: '1',
-    clientName: 'Sheikh Mohammed',
-    driverName: 'Ahmed',
-    pickupLocation: 'Berlin Airport BER',
-    dropoffLocation: 'Adlon Kempinski Berlin',
-    bookingDate: new Date().toISOString(),
-    status: 'SCHEDULED',
-    vehicle: 'Toyota Camry'
-  }
-];
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    return NextResponse.json(mockBookings);
+    const bookings = await prisma.booking.findMany({
+      orderBy: { bookingDate: 'desc' },
+    });
+    return NextResponse.json(bookings);
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to fetch bookings.' }, { status: 500 });
+    console.error('Error fetching bookings:', err);
+    return NextResponse.json({ error: 'Failed to fetch bookings from database.' }, { status: 500 });
   }
 }
 
@@ -27,25 +18,25 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { clientName, driverName, pickupLocation, dropoffLocation, bookingDate, vehicle, status } = body;
 
-    // Validate core fields
     if (!clientName || !pickupLocation || !dropoffLocation || !bookingDate || !vehicle) {
       return NextResponse.json({ error: 'All core fields are required.' }, { status: 400 });
     }
 
-    const newBooking = {
-      id: Date.now().toString(),
-      clientName,
-      driverName: driverName || 'Unassigned',
-      pickupLocation,
-      dropoffLocation,
-      bookingDate,
-      vehicle,
-      status: status || 'SCHEDULED'
-    };
+    const newBooking = await prisma.booking.create({
+      data: {
+        clientName,
+        driverName: driverName || 'Unassigned',
+        pickupLocation,
+        dropoffLocation,
+        bookingDate: new Date(bookingDate),
+        vehicle,
+        status: status || 'SCHEDULED',
+      },
+    });
 
-    mockBookings.unshift(newBooking);
     return NextResponse.json(newBooking, { status: 201 });
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to process booking.' }, { status: 500 });
+    console.error('Error creating booking:', err);
+    return NextResponse.json({ error: 'Failed to save booking to database.' }, { status: 500 });
   }
 }
