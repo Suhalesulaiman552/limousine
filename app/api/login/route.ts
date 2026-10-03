@@ -1,20 +1,32 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { phone, password } = body;
+    const { name, password } = await request.json();
 
-    const user = await prisma.user.findUnique({ where: { phone } });
-
-    if (!user || user.password !== password) {
-      return NextResponse.json({ error: 'Invalid phone number or password.' }, { status: 401 });
+    if (!name) {
+      return NextResponse.json({ error: 'Please enter a username' }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, role: user.role, name: user.name });
-  } catch (error: any) {
-    console.error('Login Error:', error);
-    return NextResponse.json({ error: error.message || 'Database error during login.' }, { status: 500 });
+    const user = await prisma.user.findFirst({
+      where: { name: { equals: name, mode: 'insensitive' } }
+    });
+
+    if (!user || user.password !== password) {
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+    }
+
+    const response = NextResponse.json({ success: true, role: user.role, name: user.name });
+    
+    response.cookies.set('user_role', user.role, { path: '/' });
+    response.cookies.set('user_name', user.name || '', { path: '/' });
+
+    return response;
+  } catch (error) {
+    console.error('Login error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

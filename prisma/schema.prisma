@@ -9,9 +9,9 @@ generator client {
 
 model User {
   id        String   @id @default(uuid())
-  email     String   @unique
+  name      String?  @unique
+  email     String?  @unique
   password  String
-  name      String?
   role      Role     @default(DRIVER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
