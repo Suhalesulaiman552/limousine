@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 interface Booking {
   id: string;
   clientName: string;
+  driverName?: string;
   pickupLocation: string;
   dropoffLocation: string;
   bookingDate: string;
@@ -19,6 +20,7 @@ export default function BookingsPage() {
   
   // Form state for creating a new booking
   const [clientName, setClientName] = useState('');
+  const [driverName, setDriverName] = useState('');
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [bookingDate, setBookingDate] = useState('');
@@ -56,6 +58,7 @@ export default function BookingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clientName,
+          driverName: driverName || 'Unassigned',
           pickupLocation,
           dropoffLocation,
           bookingDate: new Date(bookingDate).toISOString(),
@@ -66,6 +69,7 @@ export default function BookingsPage() {
 
       if (res.ok) {
         setClientName('');
+        setDriverName('');
         setPickupLocation('');
         setDropoffLocation('');
         setBookingDate('');
@@ -92,7 +96,7 @@ export default function BookingsPage() {
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Client Bookings</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-sm font-light leading-relaxed opacity-90">
-            Schedule, manage, and dispatch active limousine rides across the fleet.
+            Schedule rides, assign drivers, and manage dispatches across the fleet.
           </p>
         </div>
       </div>
@@ -117,6 +121,31 @@ export default function BookingsPage() {
               placeholder="e.g. Sheikh Mohammed"
               className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
             />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Assigned Driver</label>
+            <input
+              type="text"
+              value={driverName}
+              onChange={(e) => setDriverName(e.target.value)}
+              placeholder="e.g. Ahmed"
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Assigned Vehicle</label>
+            <select
+              value={vehicle}
+              onChange={(e) => setVehicle(e.target.value)}
+              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
+            >
+              <option value="Toyota Corolla">Toyota Corolla</option>
+              <option value="Toyota Camry">Toyota Camry</option>
+              <option value="Kia Carnival">Kia Carnival</option>
+              <option value="Nissan Patrol">Nissan Patrol</option>
+            </select>
           </div>
 
           <div>
@@ -154,25 +183,11 @@ export default function BookingsPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-[11px] font-medium text-slate-600 uppercase tracking-wide mb-1">Assigned Vehicle</label>
-            <select
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
-              className="w-full bg-white/80 border border-sky-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-cyan-400 transition"
-            >
-              <option value="Toyota Corolla">Toyota Corolla</option>
-              <option value="Toyota Camry">Toyota Camry</option>
-              <option value="Kia Carnival">Kia Carnival</option>
-              <option value="Nissan Patrol">Nissan Patrol</option>
-            </select>
-          </div>
-
-          <div className="flex items-end">
+          <div className="sm:col-span-2 lg:col-span-3 flex justify-end mt-2">
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-xs py-2.5 rounded-xl transition shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-50"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-xs px-6 py-2.5 rounded-xl transition shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-50"
             >
               {submitting ? 'Saving...' : '+ Add Booking'}
             </button>
@@ -203,6 +218,7 @@ export default function BookingsPage() {
               <thead>
                 <tr className="border-b border-sky-100 text-slate-500 font-medium tracking-[0.05em]">
                   <th className="p-4">Client</th>
+                  <th className="p-4">Driver</th>
                   <th className="p-4">Vehicle</th>
                   <th className="p-4">Route</th>
                   <th className="p-4">Date / Time</th>
@@ -213,7 +229,8 @@ export default function BookingsPage() {
                 {bookings.map((b) => (
                   <tr key={b.id} className="hover:bg-white/60 transition">
                     <td className="p-4 font-normal text-slate-900">{b.clientName}</td>
-                    <td className="p-4 text-cyan-700 font-medium">{b.vehicle}</td>
+                    <td className="p-4 font-medium text-cyan-700">{b.driverName || 'Unassigned'}</td>
+                    <td className="p-4 text-slate-700">{b.vehicle}</td>
                     <td className="p-4 text-slate-600">
                       <span className="block">{b.pickupLocation}</span>
                       <span className="text-[10px] text-slate-400">➔ {b.dropoffLocation}</span>
