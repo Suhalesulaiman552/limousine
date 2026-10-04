@@ -38,10 +38,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Assignments removed; clean active navigation links only
+  // Navigation links including the new Monthly Trips module
   const navLinks = [
     { name: 'Dashboard', href: '/admin/dashboard' },
     { name: 'Bookings', href: '/admin/bookings' },
+    { name: 'Monthly Trips', href: '/admin/monthly' },
     { name: 'Traffic Fines', href: '/admin/fines' },
     { name: 'Calculator', href: '/admin/calculator' },
   ];
