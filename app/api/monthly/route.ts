@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const monthKey = searchParams.get('monthKey') || '2026-10'; // Default current month
+    const monthKey = searchParams.get('monthKey') || '2026-10';
 
     const clients = await prisma.monthlyClient.findMany({
       include: {
@@ -25,13 +25,12 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Add a new monthly client or toggle attendance
+// POST: Add new client or toggle attendance
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { action } = body;
 
-    // Action 1: Create new client
     if (action === 'create') {
       const { name, route, type, vehicle, monthlyFee } = body;
       const newClient = await prisma.monthlyClient.create({
@@ -46,17 +45,14 @@ export async function POST(request: Request) {
       return NextResponse.json(newClient);
     }
 
-    // Action 2: Toggle or set daily attendance
     if (action === 'attendance') {
       const { clientId, monthKey, day, status } = body;
 
       if (status === null || status === undefined) {
-        // Delete record if status is cleared
         await prisma.monthlyAttendance.deleteMany({
           where: { clientId, monthKey, day },
         });
       } else {
-        // Upsert attendance record
         await prisma.monthlyAttendance.upsert({
           where: {
             clientId_monthKey_day: { clientId, monthKey, day },
