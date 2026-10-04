@@ -52,11 +52,7 @@ export default function MonthlyTripsPage() {
   }, []);
 
   const toggleClientCard = (clientId: string) => {
-    if (expandedClientId === clientId) {
-      setExpandedClientId(null); // Collapse if already open
-    } else {
-      setExpandedClientId(clientId); // Expand calendar for this customer
-    }
+    setExpandedClientId(prev => (prev === clientId ? null : clientId));
   };
 
   const toggleAttendance = async (clientId: string, day: number) => {
@@ -146,7 +142,7 @@ export default function MonthlyTripsPage() {
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Monthly Client Directory</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-md font-light leading-relaxed opacity-90">
-            Click any customer card below to view and toggle their monthly attendance calendar.
+            Click any client card below to toggle their attendance calendar and view monthly billing metrics.
           </p>
         </div>
         <button
@@ -158,7 +154,7 @@ export default function MonthlyTripsPage() {
       </div>
 
       {clients.length === 0 ? (
-        <div className="bg-white/50 backdrop-blur-xl border border-sky-200 p-12 rounded-2xl text-center">
+        <div className="bg-white/50 backdrop-blur-xl border border-sky-200 p-12 rounded-2xl text-center shadow-sm">
           <p className="text-slate-600 text-sm mb-4">No regular monthly clients added yet.</p>
           <button
             onClick={() => setShowAddModal(true)}
@@ -168,7 +164,7 @@ export default function MonthlyTripsPage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
           {clients.map(client => {
             const isExpanded = expandedClientId === client.id;
             const daysWent = client.attendance.filter(a => a.status === true).length;
@@ -177,63 +173,83 @@ export default function MonthlyTripsPage() {
             return (
               <div
                 key={client.id}
-                className="bg-white/50 backdrop-blur-xl border border-sky-200/80 rounded-2xl shadow-[0_4px_20px_0_rgba(2,132,199,0.06)] overflow-hidden transition-all duration-300"
+                className={`group relative bg-white/70 backdrop-blur-2xl rounded-2xl border transition-all duration-300 overflow-hidden shadow-[0_4px_25px_0_rgba(2,132,199,0.06)] ${
+                  isExpanded ? 'border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_8px_30px_rgba(6,182,212,0.12)]' : 'border-sky-200/90 hover:border-cyan-300'
+                }`}
               >
-                {/* Customer Summary Bar (Click to toggle calendar) */}
+                {/* Card Header / Main Row */}
                 <div
                   onClick={() => toggleClientCard(client.id)}
-                  className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer hover:bg-sky-50/50 transition"
+                  className="p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-medium text-slate-900">{client.name}</h3>
-                      <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 border border-cyan-200">
-                        {client.type}
-                      </span>
+                  <div className="flex items-start gap-4">
+                    {/* Glowing Avatar Initials Indicator */}
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 text-white flex items-center justify-center font-medium text-base shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0">
+                      {client.name.charAt(0).toUpperCase()}
                     </div>
-                    <p className="text-slate-500 text-xs">{client.route} • <span className="text-cyan-600 font-medium">{client.vehicle}</span></p>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-base sm:text-lg font-normal text-slate-900 tracking-tight">{client.name}</h3>
+                        <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                          client.type === 'University' 
+                            ? 'bg-blue-500/10 text-blue-700 border-blue-200' 
+                            : 'bg-cyan-500/10 text-cyan-700 border-cyan-200'
+                        }`}>
+                          {client.type}
+                        </span>
+                      </div>
+                      <p className="text-slate-500 text-xs font-light">
+                        Route: <span className="text-slate-800 font-medium">{client.route}</span> • Fleet: <span className="text-cyan-600 font-medium">{client.vehicle}</span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="text-right">
+                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-sky-100">
+                    <div className="text-left sm:text-right">
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-emerald-600 font-medium">{daysWent} Went</span>
-                        <span className="text-rose-600 font-medium">{daysOff} Off</span>
+                        <span className="text-emerald-600 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-200">{daysWent} Went</span>
+                        <span className="text-rose-600 font-medium bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-200">{daysOff} Off</span>
                       </div>
-                      <p className="text-slate-900 text-sm font-medium mt-0.5">AED {client.monthlyFee} /mo</p>
+                      <p className="text-slate-900 text-sm font-light mt-1">Fee: <strong className="font-semibold text-slate-900">AED {client.monthlyFee}</strong></p>
                     </div>
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs transition-transform duration-300 ${isExpanded ? 'bg-cyan-500 text-white rotate-180' : 'bg-sky-100 text-cyan-700'}`}>
+
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs transition-all duration-300 ${
+                      isExpanded 
+                        ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] rotate-180' 
+                        : 'bg-sky-100/80 text-cyan-700 group-hover:bg-cyan-500 group-hover:text-white'
+                    }`}>
                       ▼
                     </div>
                   </div>
                 </div>
 
-                {/* Expandable Calendar View */}
+                {/* Collapsible Attendance Calendar Section */}
                 {isExpanded && (
-                  <div className="p-6 border-t border-sky-100 bg-sky-50/30 space-y-4 animate-fadeIn">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div className="px-6 pb-6 pt-2 border-t border-sky-100 bg-gradient-to-b from-sky-50/40 to-white/60 space-y-4 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
                       <div>
-                        <h4 className="text-sm font-medium text-slate-900">Attendance Calendar ({client.name})</h4>
-                        <p className="text-slate-500 text-xs">Tap any day cell to toggle: <span className="text-emerald-600 font-medium">Went</span> → <span className="text-rose-600 font-medium">Skipped</span> → <span className="text-slate-500 font-medium">Clear</span></p>
+                        <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-cyan-800">Attendance Calendar</h4>
+                        <p className="text-slate-500 text-xs mt-0.5">Tap any day cell to toggle: <span className="text-emerald-600 font-medium">Went</span> → <span className="text-rose-600 font-medium">Skipped</span> → <span className="text-slate-500 font-medium">Clear</span></p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span> Went</span>
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500/20 border border-rose-500"></span> Skipped</span>
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-white border border-slate-300"></span> Unmarked</span>
+                      <div className="flex items-center gap-3 text-xs bg-white/80 px-3 py-1.5 rounded-xl border border-sky-200/60 shadow-sm">
+                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Went</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Skipped</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span> Unmarked</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-7 sm:grid-cols-10 gap-2">
                       {currentMonthDays.map(day => {
                         const record = client.attendance.find(a => a.day === day);
-                        let bgClass = "bg-white border-slate-200 text-slate-700 hover:border-cyan-400";
+                        let bgClass = "bg-white/80 border-slate-200 text-slate-700 hover:border-cyan-400 hover:bg-white";
                         let statusText = "—";
 
                         if (record?.status === true) {
-                          bgClass = "bg-emerald-500/15 border-emerald-500 text-emerald-800 shadow-sm";
+                          bgClass = "bg-emerald-500/15 border-emerald-500 text-emerald-900 shadow-sm font-medium";
                           statusText = "Went";
                         } else if (record?.status === false) {
-                          bgClass = "bg-rose-500/15 border-rose-500 text-rose-800 shadow-sm";
+                          bgClass = "bg-rose-500/15 border-rose-500 text-rose-900 shadow-sm font-medium";
                           statusText = "Off";
                         }
 
@@ -243,8 +259,8 @@ export default function MonthlyTripsPage() {
                             onClick={() => toggleAttendance(client.id, day)}
                             className={`p-2.5 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between h-18 ${bgClass}`}
                           >
-                            <span className="text-[11px] font-semibold">Day {day}</span>
-                            <span className="text-[10px] font-medium tracking-wide">{statusText}</span>
+                            <span className="text-[11px] font-semibold opacity-80">Day {day}</span>
+                            <span className="text-[10px] tracking-wide">{statusText}</span>
                           </button>
                         );
                       })}
