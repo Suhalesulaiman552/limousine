@@ -142,7 +142,7 @@ export default function MonthlyTripsPage() {
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Monthly Client Directory</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-md font-light leading-relaxed opacity-90">
-            Click any client card below to toggle their attendance calendar and view monthly billing metrics.
+            Click any client card below to open their attendance calendar.
           </p>
         </div>
         <button
@@ -164,7 +164,8 @@ export default function MonthlyTripsPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        /* OPTION 1: Grid Layout (Compact Cards) */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {clients.map(client => {
             const isExpanded = expandedClientId === client.id;
             const daysWent = client.attendance.filter(a => a.status === true).length;
@@ -173,25 +174,23 @@ export default function MonthlyTripsPage() {
             return (
               <div
                 key={client.id}
-                className={`group relative bg-white/70 backdrop-blur-2xl rounded-2xl border transition-all duration-300 overflow-hidden shadow-[0_4px_25px_0_rgba(2,132,199,0.06)] ${
-                  isExpanded ? 'border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_8px_30px_rgba(6,182,212,0.12)]' : 'border-sky-200/90 hover:border-cyan-300'
+                className={`group relative bg-white/70 backdrop-blur-2xl rounded-2xl border transition-all duration-300 overflow-hidden shadow-[0_4px_25px_0_rgba(2,132,199,0.06)] flex flex-col justify-between ${
+                  isExpanded ? 'md:col-span-2 border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_8px_30px_rgba(6,182,212,0.12)]' : 'border-sky-200/90 hover:border-cyan-300'
                 }`}
               >
-                {/* Card Header / Main Row */}
+                {/* Card Top Section */}
                 <div
                   onClick={() => toggleClientCard(client.id)}
-                  className="p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer"
+                  className="p-5 sm:p-6 cursor-pointer space-y-4"
                 >
-                  <div className="flex items-start gap-4">
-                    {/* Glowing Avatar Initials Indicator */}
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 text-white flex items-center justify-center font-medium text-base shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0">
-                      {client.name.charAt(0).toUpperCase()}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2.5 flex-wrap">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 text-white flex items-center justify-center font-medium text-base shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0">
+                        {client.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
                         <h3 className="text-base sm:text-lg font-normal text-slate-900 tracking-tight">{client.name}</h3>
-                        <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider border inline-block mt-0.5 ${
                           client.type === 'University' 
                             ? 'bg-blue-500/10 text-blue-700 border-blue-200' 
                             : 'bg-cyan-500/10 text-cyan-700 border-cyan-200'
@@ -199,37 +198,36 @@ export default function MonthlyTripsPage() {
                           {client.type}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-xs font-light">
-                        Route: <span className="text-slate-800 font-medium">{client.route}</span> • Fleet: <span className="text-cyan-600 font-medium">{client.vehicle}</span>
-                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-slate-900 text-sm font-semibold">AED {client.monthlyFee}</p>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider">Monthly Rate</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-sky-100">
-                    <div className="text-left sm:text-right">
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-emerald-600 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-200">{daysWent} Went</span>
-                        <span className="text-rose-600 font-medium bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-200">{daysOff} Off</span>
-                      </div>
-                      <p className="text-slate-900 text-sm font-light mt-1">Fee: <strong className="font-semibold text-slate-900">AED {client.monthlyFee}</strong></p>
-                    </div>
+                  <div className="bg-sky-50/60 p-3 rounded-xl border border-sky-100 space-y-1 text-xs">
+                    <p className="text-slate-600">Route: <strong className="text-slate-900">{client.route}</strong></p>
+                    <p className="text-slate-600">Vehicle: <strong className="text-cyan-600">{client.vehicle}</strong></p>
+                  </div>
 
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs transition-all duration-300 ${
-                      isExpanded 
-                        ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] rotate-180' 
-                        : 'bg-sky-100/80 text-cyan-700 group-hover:bg-cyan-500 group-hover:text-white'
-                    }`}>
-                      ▼
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-200 font-medium">{daysWent} Went</span>
+                      <span className="text-rose-700 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-200 font-medium">{daysOff} Off</span>
                     </div>
+                    <span className="text-xs font-medium text-cyan-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      {isExpanded ? 'Hide Calendar ↑' : 'View Calendar ↓'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Collapsible Attendance Calendar Section */}
+                {/* Collapsible Calendar Section */}
                 {isExpanded && (
                   <div className="px-6 pb-6 pt-2 border-t border-sky-100 bg-gradient-to-b from-sky-50/40 to-white/60 space-y-4 animate-fadeIn">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
                       <div>
-                        <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-cyan-800">Attendance Calendar</h4>
+                        <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-cyan-800">Attendance Calendar ({client.name})</h4>
                         <p className="text-slate-500 text-xs mt-0.5">Tap any day cell to toggle: <span className="text-emerald-600 font-medium">Went</span> → <span className="text-rose-600 font-medium">Skipped</span> → <span className="text-slate-500 font-medium">Clear</span></p>
                       </div>
                       <div className="flex items-center gap-3 text-xs bg-white/80 px-3 py-1.5 rounded-xl border border-sky-200/60 shadow-sm">
