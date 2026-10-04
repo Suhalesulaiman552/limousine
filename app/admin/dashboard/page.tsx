@@ -75,45 +75,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Quick Navigation Hub (Assignments shortcut removed) */}
-      <div>
-        <h3 className="text-xs font-medium text-slate-500 mb-3 tracking-[0.15em] uppercase">Modules</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href="/admin/bookings" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-cyan-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center">
-            <div>
-              <span className="text-[10px] text-cyan-700 font-medium tracking-[0.1em] uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-200">Dispatch</span>
-              <h4 className="text-base font-normal text-slate-900 mt-2 group-hover:text-cyan-600 transition">Client Bookings</h4>
-              <p className="text-slate-500 text-xs font-light mt-0.5">Manage scheduled rides and reservations.</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm text-sm">
-              ➔
-            </div>
-          </Link>
-
-          <Link href="/admin/fines" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-rose-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center">
-            <div>
-              <span className="text-[10px] text-rose-600 font-medium tracking-[0.1em] uppercase bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-200">Compliance</span>
-              <h4 className="text-base font-normal text-slate-900 mt-2 group-hover:text-rose-600 transition">Traffic Fines</h4>
-              <p className="text-slate-500 text-xs font-light mt-0.5">Track vehicle penalties and violation expenses.</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-sm text-sm">
-              ➔
-            </div>
-          </Link>
-
-          <Link href="/admin/calculator" className="group bg-white/50 backdrop-blur-xl hover:bg-white/80 p-5 rounded-2xl border border-sky-200/80 hover:border-cyan-400 transition-all duration-300 shadow-[0_4px_20px_0_rgba(2,132,199,0.05)] flex justify-between items-center sm:col-span-2">
-            <div>
-              <span className="text-[10px] text-cyan-700 font-medium tracking-[0.1em] uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-200">Finance</span>
-              <h4 className="text-base font-normal text-slate-900 mt-2 group-hover:text-cyan-600 transition">Trip Fare Calculator</h4>
-              <p className="text-slate-500 text-xs font-light mt-0.5">Estimate fuel and fares using Special 95 rates.</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm text-sm">
-              ➔
-            </div>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }
