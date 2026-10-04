@@ -51,7 +51,7 @@ export default function MonthlyTripsPage() {
     fetchClients();
   }, []);
 
-  const toggleClientCard = (clientId: string) => {
+  const toggleClientRow = (clientId: string) => {
     setExpandedClientId(prev => (prev === clientId ? null : clientId));
   };
 
@@ -138,11 +138,11 @@ export default function MonthlyTripsPage() {
         
         <div className="relative z-10">
           <span className="bg-white/20 border border-white/30 text-white text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-[0.15em] backdrop-blur-md">
-            Recurring Operations
+            Recurring Operations Matrix
           </span>
           <h2 className="text-xl sm:text-2xl font-light mt-3 tracking-tight text-white">Monthly Client Directory</h2>
           <p className="text-sky-100 text-xs mt-1 max-w-md font-light leading-relaxed opacity-90">
-            Click any client tile below to open their monthly calendar.
+            High-density master table. Tap any client row to toggle their attendance calendar.
           </p>
         </div>
         <button
@@ -164,106 +164,125 @@ export default function MonthlyTripsPage() {
           </button>
         </div>
       ) : (
-        /* OPTION 3: Elevated Modern Tile Layout */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {clients.map(client => {
-            const isExpanded = expandedClientId === client.id;
-            const daysWent = client.attendance.filter(a => a.status === true).length;
-            const daysOff = client.attendance.filter(a => a.status === false).length;
+        /* OPTION C: Compact Master Table Matrix */
+        <div className="bg-white/70 backdrop-blur-2xl rounded-2xl border border-sky-200/90 shadow-[0_4px_25px_0_rgba(2,132,199,0.06)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-sky-100 bg-sky-50/50 text-[10px] uppercase font-semibold text-slate-500 tracking-wider">
+                  <th className="py-3 px-4">Client Name</th>
+                  <th className="py-3 px-4">Route</th>
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Vehicle</th>
+                  <th className="py-3 px-4">Attendance</th>
+                  <th className="py-3 px-4 text-right">Fee</th>
+                  <th className="py-3 px-4 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-sky-100/60 text-xs">
+                {clients.map(client => {
+                  const isExpanded = expandedClientId === client.id;
+                  const daysWent = client.attendance.filter(a => a.status === true).length;
+                  const daysOff = client.attendance.filter(a => a.status === false).length;
 
-            return (
-              <div
-                key={client.id}
-                className={`group bg-white/80 backdrop-blur-2xl rounded-3xl border transition-all duration-300 overflow-hidden shadow-[0_4px_20px_rgba(2,132,199,0.06)] flex flex-col justify-between ${
-                  isExpanded ? 'md:col-span-2 border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_10px_35px_rgba(6,182,212,0.12)] bg-white' : 'border-sky-200 hover:border-cyan-300 hover:shadow-[0_6px_25px_rgba(6,182,212,0.08)]'
-                }`}
-              >
-                {/* Tile Main Header */}
-                <div
-                  onClick={() => toggleClientCard(client.id)}
-                  className="p-6 cursor-pointer space-y-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2.5">
-                        <h3 className="text-lg font-medium text-slate-900 tracking-tight">{client.name}</h3>
-                        <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
-                          client.type === 'University' 
-                            ? 'bg-blue-500/10 text-blue-700 border-blue-200' 
-                            : 'bg-cyan-500/10 text-cyan-700 border-cyan-200'
-                        }`}>
-                          {client.type}
-                        </span>
-                      </div>
-                      <p className="text-slate-500 text-xs mt-1">
-                        Route: <span className="text-slate-800 font-medium">{client.route}</span>
-                      </p>
-                    </div>
+                  return (
+                    <>
+                      <tr
+                        key={client.id}
+                        onClick={() => toggleClientRow(client.id)}
+                        className={`cursor-pointer transition-colors duration-150 ${
+                          isExpanded ? 'bg-cyan-50/60' : 'hover:bg-sky-50/40'
+                        }`}
+                      >
+                        <td className="py-3.5 px-4 font-medium text-slate-900 whitespace-nowrap">
+                          {client.name}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                          {client.route}
+                        </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                            client.type === 'University' 
+                              ? 'bg-blue-500/10 text-blue-700 border-blue-200' 
+                              : 'bg-cyan-500/10 text-cyan-700 border-cyan-200'
+                          }`}>
+                            {client.type}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-cyan-700 whitespace-nowrap font-medium">
+                          {client.vehicle}
+                        </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-[11px]">
+                            <span className="text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-200 font-medium">{daysWent}W</span>
+                            <span className="text-rose-700 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-200 font-medium">{daysOff}O</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap">
+                          AED {client.monthlyFee}
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-lg text-[10px] transition-transform duration-200 ${
+                            isExpanded ? 'bg-cyan-500 text-white rotate-180' : 'bg-sky-100 text-cyan-700'
+                          }`}>
+                            ▼
+                          </span>
+                        </td>
+                      </tr>
 
-                    <div className="text-right shrink-0">
-                      <span className="text-sm font-semibold text-slate-900">AED {client.monthlyFee}</span>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">Monthly Rate</p>
-                    </div>
-                  </div>
+                      {/* Expandable Calendar Row */}
+                      {isExpanded && (
+                        <tr key={`${client.id}-expanded`} className="bg-sky-50/40">
+                          <td colSpan={7} className="p-5 border-t border-b border-sky-200/60 animate-fadeIn">
+                            <div className="space-y-3">
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <div>
+                                  <h4 className="text-[11px] font-medium uppercase tracking-[0.15em] text-cyan-800">Attendance Matrix — {client.name}</h4>
+                                  <p className="text-slate-500 text-[11px]">Tap any day cell to toggle: <span className="text-emerald-600 font-medium">Went</span> → <span className="text-rose-600 font-medium">Skipped</span> → <span className="text-slate-500 font-medium">Clear</span></p>
+                                </div>
+                                <div className="flex items-center gap-2 text-[11px] bg-white px-3 py-1 rounded-lg border border-sky-200/60">
+                                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Went</span>
+                                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Skipped</span>
+                                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300"></span> Blank</span>
+                                </div>
+                              </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-sky-100 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 bg-emerald-500/10 px-2.5 py-1 rounded-xl border border-emerald-200 font-medium">{daysWent} Days Went</span>
-                      <span className="text-rose-700 bg-rose-500/10 px-2.5 py-1 rounded-xl border border-rose-200 font-medium">{daysOff} Days Off</span>
-                    </div>
+                              <div className="grid grid-cols-7 sm:grid-cols-10 gap-1.5 pt-1">
+                                {currentMonthDays.map(day => {
+                                  const record = client.attendance.find(a => a.day === day);
+                                  let bgClass = "bg-white border-slate-200 text-slate-700 hover:border-cyan-400";
+                                  let statusText = "—";
 
-                    <span className="text-cyan-600 font-medium flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      {isExpanded ? 'Close Calendar ↑' : 'Open Calendar →'}
-                    </span>
-                  </div>
-                </div>
+                                  if (record?.status === true) {
+                                    bgClass = "bg-emerald-500/15 border-emerald-500 text-emerald-900 font-medium";
+                                    statusText = "Went";
+                                  } else if (record?.status === false) {
+                                    bgClass = "bg-rose-500/15 border-rose-500 text-rose-900 font-medium";
+                                    statusText = "Off";
+                                  }
 
-                {/* Collapsible Calendar Inside Tile */}
-                {isExpanded && (
-                  <div className="px-6 pb-6 pt-3 border-t border-sky-100 bg-gradient-to-b from-sky-50/50 to-white space-y-4 animate-fadeIn">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                      <div>
-                        <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-cyan-800">Attendance Calendar ({client.name})</h4>
-                        <p className="text-slate-500 text-xs mt-0.5">Tap any day cell to toggle: <span className="text-emerald-600 font-medium">Went</span> → <span className="text-rose-600 font-medium">Skipped</span> → <span className="text-slate-500 font-medium">Clear</span></p>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs bg-white px-3 py-1.5 rounded-xl border border-sky-200 shadow-sm">
-                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Went</span>
-                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Skipped</span>
-                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span> Unmarked</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-7 sm:grid-cols-10 gap-2">
-                      {currentMonthDays.map(day => {
-                        const record = client.attendance.find(a => a.day === day);
-                        let bgClass = "bg-white border-slate-200 text-slate-700 hover:border-cyan-400";
-                        let statusText = "—";
-
-                        if (record?.status === true) {
-                          bgClass = "bg-emerald-500/15 border-emerald-500 text-emerald-900 font-medium shadow-sm";
-                          statusText = "Went";
-                        } else if (record?.status === false) {
-                          bgClass = "bg-rose-500/15 border-rose-500 text-rose-900 font-medium shadow-sm";
-                          statusText = "Off";
-                        }
-
-                        return (
-                          <button
-                            key={day}
-                            onClick={() => toggleAttendance(client.id, day)}
-                            className={`p-2.5 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between h-18 ${bgClass}`}
-                          >
-                            <span className="text-[11px] font-semibold opacity-75">Day {day}</span>
-                            <span className="text-[10px]">{statusText}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                                  return (
+                                    <button
+                                      key={day}
+                                      onClick={() => toggleAttendance(client.id, day)}
+                                      className={`p-2 rounded-xl border text-left transition-all duration-150 flex flex-col justify-between h-16 ${bgClass}`}
+                                    >
+                                      <span className="text-[10px] font-semibold opacity-70">Day {day}</span>
+                                      <span className="text-[10px]">{statusText}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
