@@ -12,7 +12,7 @@ model User {
   name      String?  @unique
   email     String?  @unique
   password  String
-  role      Role     @default(DRIVER)
+  role      String   @default("DRIVER")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -40,16 +40,27 @@ model Fine {
   updatedAt     DateTime @updatedAt
 }
 
-model Assignment {
-  id            String   @id @default(uuid())
-  driverName    String
-  vehicleNumber String
-  assignedDate  DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model MonthlyClient {
+  id         String              @id @default(uuid())
+  name       String
+  route      String
+  type       String              // 'Work' or 'University'
+  vehicle    String
+  monthlyFee Float
+  attendance MonthlyAttendance[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
 }
 
-enum Role {
-  ADMIN
-  DRIVER
+model MonthlyAttendance {
+  id        String        @id @default(uuid())
+  clientId  String
+  client    MonthlyClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  monthKey  String        // e.g., "2026-10"
+  day       Int           // Day of the month (1-31)
+  status    Boolean       // true = went, false = didn't go
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([clientId, monthKey, day])
 }
