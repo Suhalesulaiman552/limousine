@@ -25,11 +25,8 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/driver/dashboard');
-        }
+        // Redirect directly to your main monthly operations matrix
+        router.push('/admin/monthly');
       } else {
         setError(data.error || 'Invalid credentials');
       }
