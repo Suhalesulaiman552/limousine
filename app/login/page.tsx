@@ -25,14 +25,14 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Redirect directly to your main monthly operations matrix
-        router.push('/admin/monthly');
+        // Force a hard navigation to bypass any client-side router caching issues
+        window.location.href = '/admin/monthly';
       } else {
         setError(data.error || 'Invalid credentials');
+        setLoading(false);
       }
     } catch {
       setError('Network error during login.');
-    } finally {
       setLoading(false);
     }
   };
