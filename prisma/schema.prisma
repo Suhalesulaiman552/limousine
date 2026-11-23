@@ -1,0 +1,114 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?  @unique
+  email     String?  @unique
+  password  String
+  role      String   @default("DRIVER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Driver {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id                 String               @id @default(uuid())
+  name               String
+  make               String
+  model              String
+  registrationNumber String               @unique
+  category           String
+  status             String               @default("AVAILABLE")
+  odometerKm         Int?
+  insuranceExpiry    DateTime?
+  registrationExpiry DateTime?
+  notes              String?
+  maintenanceLogs    VehicleMaintenance[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model VehicleMaintenance {
+  id                String   @id @default(uuid())
+  vehicleId         String
+  vehicle           Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  serviceType       String   @default("OIL_CHANGE")
+  serviceDate       DateTime @default(now())
+  serviceOdometerKm Int
+  intervalKm        Int
+  nextOilChangeKm   Int
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Booking {
+  id              String    @id @default(uuid())
+  clientName      String
+  driverName      String?
+  pickupLocation  String
+  dropoffLocation String
+  bookingDate     DateTime
+  status          String    @default("SCHEDULED")
+  vehicle         String
+  price           Decimal   @default(0) @db.Decimal(10, 2)
+  cancelledAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Fine {
+  id                  String   @id @default(uuid())
+  vehicleNumber       String
+  driverName          String   @default("Unassigned")
+  suggestedDriverName String?
+  driverConfirmed     Boolean  @default(false)
+  location            String?
+  violation           String
+  amount              Float
+  fineDate            DateTime
+  paid                Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model MonthlyClient {
+  id         String              @id @default(uuid())
+  name       String
+  route      String
+  type       String
+  vehicle    String
+  monthlyFee Float
+  attendance MonthlyAttendance[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+model MonthlyAttendance {
+  id        String        @id @default(uuid())
+  clientId  String
+  client    MonthlyClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  monthKey  String
+  day       Int
+  status    Boolean
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([clientId, monthKey, day])
+}
